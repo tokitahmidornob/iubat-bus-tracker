@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         :root { 
-            --npf-base: #182825; --npf-action: #4CAF50; /* Green action color for buses */
+            --npf-base: #182825; --npf-action: #4CAF50; 
             --npf-accent: #81C784; --npf-alert: #F42A41;
             --oled-black: #000000; --text-light: #f8fafc;
         }
@@ -59,7 +59,6 @@
         .btn-action.active { background: var(--npf-alert); }
         .btn-sos-small { background: var(--npf-alert); color: white; font-size: 11px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         
-        /* Popup Styling */
         .leaflet-popup-content-wrapper { background: #111; border: 1px solid #4CAF50; color: #fff; border-radius: 8px; }
         .leaflet-popup-tip { background: #111; }
     </style>
@@ -156,10 +155,10 @@
 
     <script>
         // ==============================================
-        // 1. IUBAT SPECIFIC COORDINATES & ROUTES
+        // 1. IUBAT SPECIFIC COORDINATES & ROUTES (FULL FLEET)
         // ==============================================
         const busStopsCoords = {
-            "IUBAT Campus": {lat: 23.8821, lng: 90.3980},
+            "Campus": {lat: 23.8821, lng: 90.3980},
             "Kamarpara": {lat: 23.8906, lng: 90.3881},
             "Abdullahpur": {lat: 23.8784, lng: 90.3989},
             "House Building": {lat: 23.8761, lng: 90.3985},
@@ -168,21 +167,58 @@
             "Airport": {lat: 23.8515, lng: 90.4073},
             "Khilkhet": {lat: 23.8285, lng: 90.4215},
             "Kuril": {lat: 23.8188, lng: 90.4230},
-            "Natun Bazar": {lat: 23.8051, lng: 90.4243},
+            "Nutun Bazar": {lat: 23.8051, lng: 90.4243},
             "Badda": {lat: 23.7805, lng: 90.4267},
             "ECB Chattar": {lat: 23.8189, lng: 90.3965},
             "Kalshi": {lat: 23.8217, lng: 90.3831},
-            "Mirpur 10": {lat: 23.8069, lng: 90.3687},
+            "Mirpur - 10": {lat: 23.8069, lng: 90.3687},
             "Tongi": {lat: 23.8900, lng: 90.4000},
             "Board Bazar": {lat: 23.9427, lng: 90.3804},
-            "Gazipur Chowrasta": {lat: 23.9893, lng: 90.3725},
+            "Chowrastha": {lat: 23.9893, lng: 90.3725},
             "Ashulia": {lat: 23.8961, lng: 90.3204},
-            "Baipal": {lat: 23.9482, lng: 90.2764}
+            "Baipal": {lat: 23.9482, lng: 90.2764},
+            "Savar": {lat: 23.8384, lng: 90.2674},
+            "Nabinagar": {lat: 23.9011, lng: 90.2655},
+            "Signboard": {lat: 23.6961, lng: 90.4630},
+            "Gulistan": {lat: 23.7259, lng: 90.4124},
+            "Farmgate": {lat: 23.7561, lng: 90.3872},
+            "Mothijheel Shapla Chattar": {lat: 23.7289, lng: 90.4187},
+            "Kaliganj": {lat: 23.9424, lng: 90.5265},
+            "Rajendrapur Cantonment": {lat: 24.0811, lng: 90.4439},
+            "Kallyanpur": {lat: 23.7788, lng: 90.3639},
+            "Physical": {lat: 23.7664, lng: 90.3621}
         };
 
+        const routeMatrix = {
+            "Bus_01_Kaliganj": ["Kaliganj", "Mohila College", "Pubail College", "Mirer Bazar Chowrastha", "Maju Khan Bazar", "T & T Gate", "K 2 Factory", "West Side of Flyover", "Station Road", "Campus"],
+            "Bus_02_Rampura": ["Rampura Bridge", "Maddhya Badda", "Uttar Badda", "Shahjadpur", "Nuton Bazar", "Narda Bazar", "Bashundhara", "Kuril Bishwa Road", "Bishwa Road", "Khilkhet", "Airport", "Campus"],
+            "Bus_09_Mothijheel": ["Mothijheel Shapla Chattar", "Rajarbagh", "Malibagh Mour", "Mouchak", "Malibagh Rail Gate", "Chowdhury Para", "Hazipara", "Rampura Bazar", "Rampura TV Gate", "Maddhya Badda", "Uttar Badda", "Shahjadpur", "Nuton Bazar", "Narda Bazar", "Bashundhara", "Kuril Bishwa Road", "Bishwa Road", "Khilkhet", "Airport", "Campus"],
+            "Bus_11_Savar": ["Savar", "CRP Gate", "Radio Colony", "J Nagar Dairy Gate", "Bismail", "RAB Gate", "Nabinagar", "Cantonment Board", "Palli Biddut", "Palash Bari", "Baipail Bridge", "Unique", "Jamghara Bazar", "Sarkar Market", "Nasinghapur", "Nischintapur", "Goshbagh", "Zirabo", "Ashulia", "Dhour", "Campus"],
+            "Bus_12_Rajendrapur": ["Rajendrapur Cantonment", "Rajendrapur Chowrastha", "Masterbari", "Purabari", "University Gate", "Salna Bridge", "Nagpara", "Telipara", "Truck Stand", "Campus"],
+            "Bus_13_Konabari": ["Mouchak", "Konabari", "Palli Biddhut", "Bhawal College", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
+            "Bus_14_Shimultali": ["Shimultali", "Salna Road", "Salim Vila", "BADC", "Duet Gate", "Joydebpur Bus Stand", "Shibbari", "Krishi Gabeshana", "Rice Research", "T & T", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
+            "Bus_16_Chandura": ["Chandura", "Baripara", "Kabirpur", "Zerane Bazar", "EPZ", "Baypal", "Unique", "Zamgora Bazar", "Sarker Market", "Norsinghpur", "Zirabo", "Ashulia", "Dhour", "Campus"],
+            "Bus_17_Razbari": ["Razbari", "Kendrio Jame Mosque", "Krishi Gabeshana", "Rice Research", "T & T", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
+            "Bus_18_Kallyanpur": ["Kallyanpur", "Technical", "Ansar Camp", "Mirpur - 01", "Soni Hall", "Mirpur - 02", "Mirpur - 10", "Kazipara", "Shewrapara", "Taltala", "Agargaon", "Shaheen College", "Mohakhali Rail Gate", "Amtali", "Soinik Club", "Kakali", "Shewra", "Khilkhet", "Campus"],
+            "Bus_20_Soni_Hall": ["Soni Hall", "Mirpur - 02", "Original - 10", "Mirpur - 11", "Purobi Hall", "Palashi", "Kabarsthan", "Kalshi", "ECB Chattar", "MES", "Khilkhet", "Airport", "Campus"],
+            "Bus_29_New_Market": ["Gonoshasthya", "Science Lab", "New Market", "City College", "Zigatala", "Dhanmondi 15", "Shankar Bus Stand", "Farmgate", "Kakoli/Banani", "MES", "Khilkhet", "Airport", "Campus"],
+            "Bus_31_Kalshi": ["11.05 (Shara Egaro)", "Dha Block Mour", "Sangbadik Plot", "Byesh Tala", "Kalshi Mour", "Kalshi Bridge", "ECB Chattar", "Mati Kata Baribadh", "Shewra", "Khilkhet", "Kawla", "Airport", "Jashimuddin", "Azampur", "Abdullahpur", "Campus"],
+            "Bus_32_Signboard": ["Signboard", "Matuaile Medical", "Shonir Akra", "Mayor Hanif Flyover", "Jatrabari", "Gulistan", "National Stadium", "Shahbagh", "Banglamotor", "Sonargown Hotel", "Farmgate Pollice Box", "Shahin Hall", "Banani", "MES", "Kowla", "Airport", "Campus"],
+            "Bus_33_Physical": ["Physical", "Noorjahan Road", "Shia Masjid", "Japan Garden City", "Shymoli", "Shaheen School", "Mohakhali Flyover", "Kakoli , Banani", "MES", "House Building", "Abdullahpur", "Campus"]
+        };
+
+        const defaultStops = ["Campus"];
+
+        // Dynamic Populator for missing coordinates (Fail-Safe mechanism)
         const alarmSelect = document.getElementById("alarmSelect");
         const etaSelect = document.getElementById("etaStation");
-        for (let stop in busStopsCoords) {
+        
+        let allUniqueStops = new Set();
+        for (let route in routeMatrix) {
+            routeMatrix[route].forEach(stop => allUniqueStops.add(stop));
+        }
+        
+        allUniqueStops.forEach(stop => {
             let opt = document.createElement("option");
             opt.value = stop; opt.text = `🔔 Wake me up at ${stop}`;
             alarmSelect.appendChild(opt);
@@ -190,17 +226,7 @@
             let optETA = document.createElement("option");
             optETA.value = stop; optETA.text = stop;
             if(etaSelect) etaSelect.appendChild(optETA);
-        }
-
-        const routeMatrix = {
-            "Uttara_Route_Bus_01": ["IUBAT Campus", "Kamarpara", "Abdullahpur", "House Building", "Azampur", "Rajlakshmi", "Airport"],
-            "Badda_Route_Bus_02": ["IUBAT Campus", "Abdullahpur", "Airport", "Khilkhet", "Kuril", "Natun Bazar", "Badda"],
-            "Mirpur_Route_Bus_03": ["IUBAT Campus", "ECB Chattar", "Kalshi", "Mirpur 10"],
-            "Gazipur_Route_Bus_04": ["IUBAT Campus", "Tongi", "Board Bazar", "Gazipur Chowrasta"],
-            "Savar_Route_Bus_05": ["IUBAT Campus", "Kamarpara", "Ashulia", "Baipal"]
-        };
-
-        const defaultStops = ["IUBAT Campus", "Abdullahpur", "Mirpur 10", "Gazipur Chowrasta", "Natun Bazar", "Baipal"];
+        });
 
         function populateBusDropdowns() {
             const fSelect = document.getElementById("fSelect");
@@ -234,7 +260,7 @@
         }
 
         // ==============================================
-        // 2. FIREBASE UPLINK (IUBAT CREDENTIALS)
+        // 2. FIREBASE UPLINK
         // ==============================================
         const firebaseConfig = {
             apiKey: "AIzaSyB7-YL-HoQA9uijTNFJawBUqZaxarfmRc4",
@@ -270,7 +296,6 @@
             const target = busStopsCoords[targetAlarmStation];
             if (!target) return;
 
-            // 2KM Wake up alarm for city buses
             const distKm = getHaversine(currentLat, currentLng, target.lat, target.lng);
             if (distKm <= 2.0) {
                 isAlarmTriggered = true;
@@ -281,7 +306,7 @@
         }
 
         // ==============================================
-        // 3. FALSE ALARM PREVENTION (THE ROUTE LOCK)
+        // 3. FALSE ALARM PREVENTION (DYNAMIC SHIELD)
         // ==============================================
         function verifyRouteProximity(lat, lng, busId) {
             const route = routeMatrix[busId] || defaultStops;
@@ -291,6 +316,7 @@
                 if (busStopsCoords[st]) validCoords.push(busStopsCoords[st]);
             });
             
+            // Fail-Safe: If we lack coordinates for the majority of the route, allow the broadcast.
             if (validCoords.length < 2) return true; 
             
             let minDistance = Infinity;
@@ -298,12 +324,12 @@
                 let p1 = validCoords[i]; let p2 = validCoords[i+1];
                 let dx = p2.lng - p1.lng; let dy = p2.lat - p1.lat;
                 let len2 = dx * dx + dy * dy;
+                if (len2 === 0) continue;
                 let t = Math.max(0, Math.min(1, ((lng - p1.lng) * dx + (lat - p1.lat) * dy) / len2));
                 let projX = p1.lng + t * dx; let projY = p1.lat + t * dy;
                 let dist = getHaversine(lat, lng, projY, projX);
                 if (dist < minDistance) minDistance = dist;
             }
-            // For city buses, if the student is more than 3.0km off the route, it's a false broadcast.
             return minDistance <= 3.0; 
         }
 
@@ -315,7 +341,7 @@
             let dest = document.getElementById("etaStation").value;
             if(!dest) { alert("⚠️ Please select your Target Destination first."); return; }
             let simulatedDistance = Math.floor(Math.random() * 15) + 5; 
-            let speed = 25; // Average Dhaka traffic speed
+            let speed = 25; 
             let timeInMinutes = Math.round((simulatedDistance / speed) * 60);
             alert(`⏱️ TRAJECTORY CALCULATED\n\nDestination: ${dest}\nEstimated Distance: ~${simulatedDistance} km\n\nEstimated Time of Arrival: ${timeInMinutes} minutes.`);
             document.getElementById('etaDisplay').innerText = `${timeInMinutes} MINS`;
@@ -384,9 +410,6 @@
 
         let map, markers = {};
 
-        // ==============================================
-        // 4. THE FILTER ENGINE (ISOLATION PROTOCOL)
-        // ==============================================
         function applyFilter() { renderMarkers(); }
 
         function renderMarkers() {
@@ -408,7 +431,6 @@
                 const diffMs = now - p.ts;
                 const diffMins = Math.floor(diffMs / 60000);
                 
-                // If a user selects a specific bus, ALL OTHERS ARE HIDDEN here.
                 if (filterVal !== "" && p.bus !== filterVal) continue;
                 if (filterVal !== "") checkGeofence(p.lat, p.lng);
                 
@@ -430,7 +452,6 @@
         }
 
         function loadMap() {
-            // Tighter bounds around Dhaka/Gazipur to prevent map scrolling to other countries
             const bdBounds = L.latLngBounds([23.5, 90.0], [24.2, 90.8]);
 
             map = L.map('map', {
@@ -438,7 +459,7 @@
                 maxBounds: bdBounds,         
                 maxBoundsViscosity: 1.0,     
                 minZoom: 10                  
-            }).setView([23.8821, 90.3980], 12); // Centered on IUBAT
+            }).setView([23.8821, 90.3980], 12); 
             
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
                 maxZoom: 19,
@@ -467,7 +488,6 @@
                     const cLng = pos.coords.longitude;
                     const now = Date.now();
 
-                    // FALSE ALARM ROUTE LOCK
                     const isOnTrack = verifyRouteProximity(cLat, cLng, busRoute);
                     if (!isOnTrack) {
                         alert("🚨 FALSE ALARM DETECTED: You are more than 3km outside the designated bus route. Transmission halted to protect the map integrity.");
@@ -483,7 +503,7 @@
                     if (lastLat && lastTs) {
                         const distKm = getHaversine(lastLat, lastLng, cLat, cLng);
                         const timeHr = (now - lastTs) / 3600000;
-                        if (timeHr > 0 && (distKm / timeHr) > 130) return; // Buses don't fly
+                        if (timeHr > 0 && (distKm / timeHr) > 130) return; 
                     }
 
                     const alpha = 0.3;
