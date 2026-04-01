@@ -281,21 +281,19 @@
             });
         }
 
+        // ==============================================
+        // 3. CORE INFRASTRUCTURE (FIREBASE & MAPS)
+        // ==============================================
         const firebaseConfig = {
-            // Your new IUBAT specific API Key
-            apiKey: "AIzaSyB7-YL-HoQA9uijTNFJawBUqZaxarfmRc4",
-            
-            // Your new Project ID
-            projectId: "iubat-bus-tracker-58d7a",
-            
-            // CRITICAL: This URL is different (Asia-Southeast region)
-            databaseURL: "https://iubat-bus-tracker-58d7a-default-rtdb.asia-southeast1.firebasedatabase.app",
-            
-            // Optional for RTDB but good for completeness
-            authDomain: "iubat-bus-tracker-58d7a.firebaseapp.com"
+            apiKey: "AIzaSyBnobtreK3f4E5reJ8a1Dw0Dq_dU6-_w1I",
+            authDomain: "iubat-bus-command.firebaseapp.com",
+            projectId: "iubat-bus-command",
+            storageBucket: "iubat-bus-command.firebasestorage.app",
+            messagingSenderId: "828791840620",
+            appId: "1:828791840620:web:f45b14b8c1f295d1775d49",
+            databaseURL: "https://iubat-bus-command-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
         
-        // Initialize the new engine
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
@@ -311,6 +309,18 @@
             isAlarmTriggered = false; 
         }
 
+        // --- DISTANCE CALCULATOR (HAVERSINE FORMULA) ---
+        function getHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
         function checkGeofence(currentLat, currentLng) {
             if (!targetAlarmStation || isAlarmTriggered) return;
             const target = stoppageCoords[targetAlarmStation];
@@ -320,7 +330,7 @@
             if (distKm <= 2.0) {
                 isAlarmTriggered = true;
                 if ("vibrate" in navigator) navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 2000]);
-                alert(`⚠️ WAKE UP ALERT!\nThe train is within ${distKm.toFixed(1)} km of ${targetAlarmStation}. Prepare to disembark.`);
+                alert(`⚠️ WAKE UP ALERT!\nThe bus is within ${distKm.toFixed(1)} km of ${targetAlarmStation}. Prepare to disembark.`);
                 document.getElementById("alarmSelect").style.color = "var(--npf-alert)";
             }
         }
@@ -376,7 +386,7 @@
                 navigator.geolocation.getCurrentPosition(function(position) {
                     let lat = position.coords.latitude;
                     let lon = position.coords.longitude;
-                    let mapsLink = `https://www.google.com/maps?q=$${lat},${lon}`;
+                    let mapsLink = `https://www.google.com/maps?q=${lat},${lon}`;
                     let emergencyMessage = `🚨 EMERGENCY! I need help. I am on IUBAT Bus: ${bus}, ID: ${compartment}. My live location is here: ${mapsLink}`;
                     let whatsappUrl = `https://wa.me/?text=${encodeURIComponent(emergencyMessage)}`;
                     window.open(whatsappUrl, '_blank');
@@ -433,7 +443,7 @@
                 
                 if(diffMs < 10800000) { 
                     let statusUI = diffMins < 2 ? `<span style="color:#00ff88;">● Live Now</span>` : `<span style="color:#fbbf24;">● Last seen ${diffMins} mins ago</span>`;
-                    markers[trainId] = L.marker([p.lat, p.lng]).addTo(map).bindPopup(`
+                    markers[busId] = L.marker([p.lat, p.lng]).addTo(map).bindPopup(`
                         <b style="color:var(--npf-action); font-size:14px;">${p.bus.replace(/_/g, ' ')}</b><br>
                         Tracker: ${p.name}<br>Station: ${p.station}<br>
                         Speed: <b>${p.speed} KM/H</b><br>
@@ -485,7 +495,7 @@
                     // THIS IS YOUR PRESERVED SENSOR LOGIC
                     const isOnTrack = verifyRouteProximity(cLat, cLng, train);
                     if (!isOnTrack) {
-                        alert("🚨 FALSE ALARM DETECTED: You are broadcasting from outside the designated railway tracks for this train. Transmission halted and marker erased.");
+                        alert("🚨 FALSE ALARM DETECTED: You are broadcasting from outside the designated bus route for this service. Transmission halted and marker erased.");
                         db.ref('active_buses/' + uName).remove(); 
                         toggleTelemetry(); 
                         return;
