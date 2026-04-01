@@ -34,12 +34,10 @@
         .alarm-bar { background: #0f172a; padding: 8px 20px; border-bottom: 1px solid #334; display: flex; align-items: center; z-index: 1000; gap: 10px; }
         .alarm-bar select { background: transparent; border: none; color: #fbbf24; font-weight: bold; font-size: 12px; width: 100%; outline: none; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* NEW: Button styling for the ETA Intel toggle */
         .btn-nav { background: #fbbf24; color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; margin-left: auto; }
 
         #map { flex-grow: 1; width: 100%; z-index: 1; background: var(--oled-black); min-height: 20vh; }
         
-        /* NEW: Hidden ETA Overlay Panel */
         #etaOverlay { 
             display: none; position: fixed; inset: 0; z-index: 2000; 
             background: var(--oled-black); padding: 30px; 
@@ -52,8 +50,6 @@
         }
         .grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        
-        /* NEW: Grid for placing the SOS button next to main inputs */
         .grid-sos { display: grid; grid-template-columns: 3.5fr 1fr; gap: 10px; margin-bottom: 10px; }
         
         select { background: var(--oled-black); border: 1px solid #445; color: white; padding: 12px; border-radius: 8px; width: 100%; font-size: 13px; box-sizing: border-box; }
@@ -61,9 +57,10 @@
         
         .btn-action { width: 100%; padding: 16px; background: var(--npf-action); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; flex-shrink: 0; }
         .btn-action.active { background: var(--npf-alert); }
-        
-        /* NEW: Small SOS Button */
         .btn-sos-small { background: var(--npf-alert); color: white; font-size: 11px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        
+        .leaflet-popup-content-wrapper { background: #111; border: 1px solid #4CAF50; color: #fff; border-radius: 8px; }
+        .leaflet-popup-tip { background: #111; }
     </style>
 </head>
 <body>
@@ -158,36 +155,21 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
-        // --- PRESERVED BUT UPDATED FOR ALL 15 IUBAT BUS ROUTES ---
         const busStopsCoords = {
-            "Campus": {lat: 23.8821, lng: 90.3980},
-            "Kamarpara": {lat: 23.8906, lng: 90.3881},
-            "Abdullahpur": {lat: 23.8784, lng: 90.3989},
-            "House Building": {lat: 23.8761, lng: 90.3985},
-            "Azampur": {lat: 23.8675, lng: 90.4008},
-            "Rajlakshmi": {lat: 23.8642, lng: 90.4001},
-            "Airport": {lat: 23.8515, lng: 90.4073},
-            "Khilkhet": {lat: 23.8285, lng: 90.4215},
-            "Kuril": {lat: 23.8188, lng: 90.4230},
-            "Nutun Bazar": {lat: 23.8051, lng: 90.4243},
-            "Badda": {lat: 23.7805, lng: 90.4267},
-            "ECB Chattar": {lat: 23.8189, lng: 90.3965},
-            "Kalshi": {lat: 23.8217, lng: 90.3831},
-            "Mirpur - 10": {lat: 23.8069, lng: 90.3687},
-            "Tongi": {lat: 23.8900, lng: 90.4000},
-            "Board Bazar": {lat: 23.9427, lng: 90.3804},
-            "Chowrastha": {lat: 23.9893, lng: 90.3725},
-            "Ashulia": {lat: 23.8961, lng: 90.3204},
-            "Baipal": {lat: 23.9482, lng: 90.2764},
-            "Savar": {lat: 23.8384, lng: 90.2674},
-            "Nabinagar": {lat: 23.9011, lng: 90.2655},
-            "Signboard": {lat: 23.6961, lng: 90.4630},
-            "Gulistan": {lat: 23.7259, lng: 90.4124},
-            "Farmgate": {lat: 23.7561, lng: 90.3872},
-            "Mothijheel Shapla Chattar": {lat: 23.7289, lng: 90.4187},
-            "Kaliganj": {lat: 23.9424, lng: 90.5265},
-            "Rajendrapur Cantonment": {lat: 24.0811, lng: 90.4439},
-            "Kallyanpur": {lat: 23.7788, lng: 90.3639},
+            "Campus": {lat: 23.8821, lng: 90.3980}, "Kamarpara": {lat: 23.8906, lng: 90.3881},
+            "Abdullahpur": {lat: 23.8784, lng: 90.3989}, "House Building": {lat: 23.8761, lng: 90.3985},
+            "Azampur": {lat: 23.8675, lng: 90.4008}, "Rajlakshmi": {lat: 23.8642, lng: 90.4001},
+            "Airport": {lat: 23.8515, lng: 90.4073}, "Khilkhet": {lat: 23.8285, lng: 90.4215},
+            "Kuril": {lat: 23.8188, lng: 90.4230}, "Nutun Bazar": {lat: 23.8051, lng: 90.4243},
+            "Badda": {lat: 23.7805, lng: 90.4267}, "ECB Chattar": {lat: 23.8189, lng: 90.3965},
+            "Kalshi": {lat: 23.8217, lng: 90.3831}, "Mirpur - 10": {lat: 23.8069, lng: 90.3687},
+            "Tongi": {lat: 23.8900, lng: 90.4000}, "Board Bazar": {lat: 23.9427, lng: 90.3804},
+            "Chowrastha": {lat: 23.9893, lng: 90.3725}, "Ashulia": {lat: 23.8961, lng: 90.3204},
+            "Baipal": {lat: 23.9482, lng: 90.2764}, "Savar": {lat: 23.8384, lng: 90.2674},
+            "Nabinagar": {lat: 23.9011, lng: 90.2655}, "Signboard": {lat: 23.6961, lng: 90.4630},
+            "Gulistan": {lat: 23.7259, lng: 90.4124}, "Farmgate": {lat: 23.7561, lng: 90.3872},
+            "Mothijheel Shapla Chattar": {lat: 23.7289, lng: 90.4187}, "Kaliganj": {lat: 23.9424, lng: 90.5265},
+            "Rajendrapur Cantonment": {lat: 24.0811, lng: 90.4439}, "Kallyanpur": {lat: 23.7788, lng: 90.3639},
             "Physical": {lat: 23.7664, lng: 90.3621}
         };
 
@@ -211,7 +193,6 @@
 
         const defaultStops = ["Campus"];
 
-        // PRESERVED DYNAMIC POPULATOR
         const alarmSelect = document.getElementById("alarmSelect");
         const etaSelect = document.getElementById("etaStation");
         let allUniqueStops = new Set();
@@ -259,7 +240,6 @@
             });
         }
 
-        // --- NEW IUBAT FIREBASE KEYS ---
         const firebaseConfig = {
             apiKey: "AIzaSyB7-YL-HoQA9uijTNFJawBUqZaxarfmRc4",
             databaseURL: "https://iubat-bus-tracker-58d7a-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -273,6 +253,21 @@
         let globalDbData = {}; 
         let targetAlarmStation = "";
         let isAlarmTriggered = false;
+
+        // === SECURITY MODULE: SANITIZATION ENGINE ===
+        // Prevents XSS attacks by escaping malicious HTML characters injected into the database.
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return String(str);
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
 
         function getHaversine(lat1, lon1, lat2, lon2) {
             const R = 6371; 
@@ -295,7 +290,6 @@
             if (!target) return;
 
             const distKm = getHaversine(currentLat, currentLng, target.lat, target.lng);
-            // Changed from 5km to 2km for buses
             if (distKm <= 2.0) {
                 isAlarmTriggered = true;
                 if ("vibrate" in navigator) navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 2000]);
@@ -304,7 +298,6 @@
             }
         }
 
-        // --- EXACT PRESERVED VALIDATOR LOGIC (Adjusted to 3.0km for City Buses) ---
         function verifyRouteProximity(lat, lng, busId) {
             const route = routeMatrix[busId] || defaultStops;
             let validCoords = [];
@@ -329,7 +322,6 @@
             return minDistance <= 3.0; 
         }
 
-        // --- PRESERVED ETA & SOS FUNCTIONS ---
         function toggleETAOverlay(show) {
             document.getElementById('etaOverlay').style.display = show ? 'flex' : 'none';
         }
@@ -338,7 +330,7 @@
             let dest = document.getElementById("etaStation").value;
             if(!dest) { alert("⚠️ Please select your Target Destination first."); return; }
             let simulatedDistance = Math.floor(Math.random() * 15) + 5; 
-            let speed = 25; // Slower average speed for city buses
+            let speed = 25; 
             let timeInMinutes = Math.round((simulatedDistance / speed) * 60);
             alert(`⏱️ TRAJECTORY CALCULATED\n\nDestination: ${dest}\nEstimated Distance: ~${simulatedDistance} km\n\nEstimated Time of Arrival: ${timeInMinutes} minutes.`);
             document.getElementById('etaDisplay').innerText = `${timeInMinutes} MINS`;
@@ -432,18 +424,30 @@
                 
                 if(diffMs < 10800000) { 
                     let statusUI = diffMins < 2 ? `<span style="color:#00ff88;">● Live Now</span>` : `<span style="color:#fbbf24;">● Last seen ${diffMins} mins ago</span>`;
+                    
+                    // CLEAN DATA: Passing incoming payload strings through the Sanitization Engine
+                    const safeBusName = escapeHTML(p.bus.replace(/_/g, ' '));
+                    const safeUserName = escapeHTML(p.name);
+                    const safeStation = escapeHTML(p.station);
+                    const safeCrowd = escapeHTML(p.crowd);
+                    const safeSeat = escapeHTML(p.seat);
+                    
+                    // PARSE NUMBERS: Enforce rigid numeric types
+                    const safeSpeed = parseInt(p.speed) || 0;
+                    const safeAlt = parseInt(p.alt) || 0;
+                    const safeHdg = parseInt(p.hdg) || 0;
+
                     markers[busId] = L.marker([p.lat, p.lng]).addTo(map).bindPopup(`
-                        <b style="color:var(--npf-action); font-size:14px;">${p.bus.replace(/_/g, ' ')}</b><br>
-                        Tracker: ${p.name}<br>Station: ${p.station}<br>
-                        Speed: <b>${p.speed} KM/H</b><br>
-                        Telemetry: Alt ${p.alt || 0}m | Hdg ${p.hdg || 0}°<br>
+                        <b style="color:var(--npf-action); font-size:14px;">${safeBusName}</b><br>
+                        Tracker: ${safeUserName}<br>Station: ${safeStation}<br>
+                        Speed: <b>${safeSpeed} KM/H</b><br>
+                        Telemetry: Alt ${safeAlt}m | Hdg ${safeHdg}°<br>
                         Status: ${statusUI}
                     `);
                 }
             }
         }
 
-        // --- UPDATED MAP BOUNDS FOR DHAKA / GAZIPUR ---
         function loadMap() {
             const bdBounds = L.latLngBounds([23.5, 90.0], [24.2, 90.8]);
 
@@ -481,7 +485,6 @@
                     const cLng = pos.coords.longitude;
                     const now = Date.now();
 
-                    // --- PRESERVED SENSOR LOGIC ---
                     const isOnTrack = verifyRouteProximity(cLat, cLng, busRoute);
                     if (!isOnTrack) {
                         alert("🚨 FALSE ALARM DETECTED: You are broadcasting from outside the designated route for this bus. Transmission halted and marker erased.");
@@ -523,7 +526,6 @@
                     
                     btn.innerText = "HALT BROADCAST"; btn.classList.add('active');
                 }, (err) => {
-                    // --- SMART ERROR DECODER AND UI RESET ---
                     let errorMsg = err.message;
                     if(err.code === 1) errorMsg = "Permission Denied. Please allow location access in your browser settings.";
                     else if(err.code === 2) errorMsg = "Position Unavailable. Make sure your phone's GPS/Location is turned ON.";
@@ -531,14 +533,12 @@
                     
                     alert("🔴 GPS Error: " + errorMsg);
                     
-                    // Reset the button so it isn't stuck
                     navigator.geolocation.clearWatch(wID); wID = null;
                     if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
                     btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active');
                     document.getElementById('sys-status').innerText = "Mode: Probe (Standby)";
 
                 }, 
-                // --- RELAXED MOBILE PARAMETERS FOR SUCCESSFUL BROADCAST ---
                 { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
             } else {
                 navigator.geolocation.clearWatch(wID); wID = null;
