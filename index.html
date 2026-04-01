@@ -60,7 +60,6 @@
         .btn-sos-small { background: var(--npf-alert); color: white; font-size: 11px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         
         .leaflet-popup-content-wrapper { background: #111; border: 1px solid #4CAF50; color: #fff; border-radius: 8px; }
-        .leaflet-popup-tip { background: #111; }
     </style>
 </head>
 <body>
@@ -77,10 +76,8 @@
 
     <div id="etaOverlay">
         <h2 style="color: #fbbf24; text-align: center; margin-top: 0; letter-spacing: 2px;">TRAJECTORY INTEL</h2>
-        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Bus Stop for ETA Calculation</p>
-        <div class="grid">
-            <select id="etaStation" style="border: 1px solid var(--npf-accent);"></select>
-        </div>
+        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Stop for ETA Calculation</p>
+        <div class="grid"><select id="etaStation" style="border: 1px solid var(--npf-accent);"></select></div>
         <div style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
             <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival Time</div>
             <span id="etaDisplay" style="color:#fbbf24; font-weight:bold; font-size: 40px;">-- MINS</span>
@@ -119,28 +116,16 @@
         </div>
 
         <div class="panel" id="bPanel">
-            <div class="grid">
-                <select id="tSelect" onchange="updateStationRoute()"></select> 
-            </div>
-            <div class="grid">
-                <select id="tStation" disabled>
-                    <option value="Unknown">-- Awaiting Route Selection --</option>
-                </select>
-            </div>
+            <div class="grid"><select id="tSelect" onchange="updateStationRoute()"></select></div>
+            <div class="grid"><select id="tStation" disabled><option value="Unknown">-- Awaiting Selection --</option></select></div>
             <div class="grid-2">
                 <select id="tCrowd">
-                    <option value="Unknown">-- Crowd Level --</option>
-                    <option value="Empty">Empty</option>
-                    <option value="Light">Light</option>
-                    <option value="Moderate">Moderate</option>
-                    <option value="Heavy">Heavy</option>
-                    <option value="Crush Capacity">Crush Capacity</option>
+                    <option value="Empty">Empty</option><option value="Light">Light</option>
+                    <option value="Moderate">Moderate</option><option value="Heavy">Heavy</option>
                 </select>
                 <select id="tSeat">
-                    <option value="Unknown">-- Availability --</option>
-                    <option value="Seats Available">Seats Available</option>
-                    <option value="Standing Room Only">Standing Room Only</option>
-                    <option value="No Standing Room">No Standing Room</option>
+                    <option value="Clear">Clear Road</option><option value="Traffic">Traffic</option>
+                    <option value="Jam">Heavy Jam</option>
                 </select>
             </div>
             <div class="grid-sos">
@@ -155,89 +140,59 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
+        // --- COMPLETE IUBAT FLEET DATABASE ---
         const busStopsCoords = {
-            "Campus": {lat: 23.8821, lng: 90.3980}, "Kamarpara": {lat: 23.8906, lng: 90.3881},
-            "Abdullahpur": {lat: 23.8784, lng: 90.3989}, "House Building": {lat: 23.8761, lng: 90.3985},
-            "Azampur": {lat: 23.8675, lng: 90.4008}, "Rajlakshmi": {lat: 23.8642, lng: 90.4001},
-            "Airport": {lat: 23.8515, lng: 90.4073}, "Khilkhet": {lat: 23.8285, lng: 90.4215},
-            "Kuril": {lat: 23.8188, lng: 90.4230}, "Nutun Bazar": {lat: 23.8051, lng: 90.4243},
-            "Badda": {lat: 23.7805, lng: 90.4267}, "ECB Chattar": {lat: 23.8189, lng: 90.3965},
-            "Kalshi": {lat: 23.8217, lng: 90.3831}, "Mirpur - 10": {lat: 23.8069, lng: 90.3687},
-            "Tongi": {lat: 23.8900, lng: 90.4000}, "Board Bazar": {lat: 23.9427, lng: 90.3804},
-            "Chowrastha": {lat: 23.9893, lng: 90.3725}, "Ashulia": {lat: 23.8961, lng: 90.3204},
-            "Baipal": {lat: 23.9482, lng: 90.2764}, "Savar": {lat: 23.8384, lng: 90.2674},
-            "Nabinagar": {lat: 23.9011, lng: 90.2655}, "Signboard": {lat: 23.6961, lng: 90.4630},
-            "Gulistan": {lat: 23.7259, lng: 90.4124}, "Farmgate": {lat: 23.7561, lng: 90.3872},
-            "Mothijheel Shapla Chattar": {lat: 23.7289, lng: 90.4187}, "Kaliganj": {lat: 23.9424, lng: 90.5265},
-            "Rajendrapur Cantonment": {lat: 24.0811, lng: 90.4439}, "Kallyanpur": {lat: 23.7788, lng: 90.3639},
-            "Physical": {lat: 23.7664, lng: 90.3621}
+            "Campus": {lat: 23.8821, lng: 90.3980}, "Kamarpara": {lat: 23.8906, lng: 90.3881}, "Abdullahpur": {lat: 23.8784, lng: 90.3989},
+            "House Building": {lat: 23.8761, lng: 90.3985}, "Azampur": {lat: 23.8675, lng: 90.4008}, "Rajlakshmi": {lat: 23.8642, lng: 90.4001},
+            "Airport": {lat: 23.8515, lng: 90.4073}, "Khilkhet": {lat: 23.8285, lng: 90.4215}, "Kuril": {lat: 23.8188, lng: 90.4230},
+            "Nutun Bazar": {lat: 23.8051, lng: 90.4243}, "Badda": {lat: 23.7805, lng: 90.4267}, "ECB Chattar": {lat: 23.8189, lng: 90.3965},
+            "Kalshi": {lat: 23.8217, lng: 90.3831}, "Mirpur - 10": {lat: 23.8069, lng: 90.3687}, "Tongi": {lat: 23.8900, lng: 90.4000},
+            "Board Bazar": {lat: 23.9427, lng: 90.3804}, "Chowrastha": {lat: 23.9893, lng: 90.3725}, "Ashulia": {lat: 23.8961, lng: 90.3204},
+            "Baipal": {lat: 23.9482, lng: 90.2764}, "Savar": {lat: 23.8384, lng: 90.2674}, "Nabinagar": {lat: 23.9011, lng: 90.2655},
+            "Signboard": {lat: 23.6961, lng: 90.4630}, "Gulistan": {lat: 23.7259, lng: 90.4124}, "Farmgate": {lat: 23.7561, lng: 90.3872},
+            "Mothijheel": {lat: 23.7289, lng: 90.4187}, "Kaliganj": {lat: 23.9424, lng: 90.5265}, "Rajendrapur": {lat: 24.0811, lng: 90.4439},
+            "Kallyanpur": {lat: 23.7788, lng: 90.3639}, "Physical": {lat: 23.7664, lng: 90.3621}
         };
 
         const routeMatrix = {
             "Bus_01_Kaliganj": ["Kaliganj", "Mohila College", "Pubail College", "Mirer Bazar Chowrastha", "Maju Khan Bazar", "T & T Gate", "K 2 Factory", "West Side of Flyover", "Station Road", "Campus"],
             "Bus_02_Rampura": ["Rampura Bridge", "Maddhya Badda", "Uttar Badda", "Shahjadpur", "Nuton Bazar", "Narda Bazar", "Bashundhara", "Kuril Bishwa Road", "Bishwa Road", "Khilkhet", "Airport", "Campus"],
-            "Bus_09_Mothijheel": ["Mothijheel Shapla Chattar", "Rajarbagh", "Malibagh Mour", "Mouchak", "Malibagh Rail Gate", "Chowdhury Para", "Hazipara", "Rampura Bazar", "Rampura TV Gate", "Maddhya Badda", "Uttar Badda", "Shahjadpur", "Nuton Bazar", "Narda Bazar", "Bashundhara", "Kuril Bishwa Road", "Bishwa Road", "Khilkhet", "Airport", "Campus"],
-            "Bus_11_Savar": ["Savar", "CRP Gate", "Radio Colony", "J Nagar Dairy Gate", "Bismail", "RAB Gate", "Nabinagar", "Cantonment Board", "Palli Biddut", "Palash Bari", "Baipail Bridge", "Unique", "Jamghara Bazar", "Sarkar Market", "Nasinghapur", "Nischintapur", "Goshbagh", "Zirabo", "Ashulia", "Dhour", "Campus"],
-            "Bus_12_Rajendrapur": ["Rajendrapur Cantonment", "Rajendrapur Chowrastha", "Masterbari", "Purabari", "University Gate", "Salna Bridge", "Nagpara", "Telipara", "Truck Stand", "Campus"],
+            "Bus_09_Mothijheel": ["Mothijheel", "Rajarbagh", "Malibagh Mour", "Mouchak", "Malibagh Rail Gate", "Chowdhury Para", "Hazipara", "Rampura Bazar", "Rampura TV Gate", "Maddhya Badda", "Uttar Badda", "Shahjadpur", "Nuton Bazar", "Narda Bazar", "Bashundhara", "Kuril Bishwa Road", "Bishwa Road", "Khilkhet", "Airport", "Campus"],
+            "Bus_11_Savar": ["Savar", "CRP Gate", "Radio Colony", "Dairy Gate", "Bismail", "RAB Gate", "Nabinagar", "Cantonment", "Palli Biddut", "Palash Bari", "Baipail Bridge", "Unique", "Jamghara", "Sarkar Market", "Nasinghapur", "Zirabo", "Ashulia", "Dhour", "Campus"],
+            "Bus_12_Rajendrapur": ["Rajendrapur", "Masterbari", "Purabari", "Salna Bridge", "Nagpara", "Telipara", "Truck Stand", "Campus"],
             "Bus_13_Konabari": ["Mouchak", "Konabari", "Palli Biddhut", "Bhawal College", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
-            "Bus_14_Shimultali": ["Shimultali", "Salna Road", "Salim Vila", "BADC", "Duet Gate", "Joydebpur Bus Stand", "Shibbari", "Krishi Gabeshana", "Rice Research", "T & T", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
-            "Bus_16_Chandura": ["Chandura", "Baripara", "Kabirpur", "Zerane Bazar", "EPZ", "Baypal", "Unique", "Zamgora Bazar", "Sarker Market", "Norsinghpur", "Zirabo", "Ashulia", "Dhour", "Campus"],
+            "Bus_14_Shimultali": ["Shimultali", "Salna Road", "Salim Vila", "BADC", "Duet Gate", "Joydebpur", "Shibbari", "Krishi Gabeshana", "Chowrastha", "Board Bazar", "Barabari", "Campus"],
+            "Bus_16_Chandura": ["Chandura", "Baripara", "Kabirpur", "Zerane Bazar", "EPZ", "Baipal", "Unique", "Zamgora Bazar", "Sarker Market", "Norsinghpur", "Zirabo", "Ashulia", "Dhour", "Campus"],
             "Bus_17_Razbari": ["Razbari", "Kendrio Jame Mosque", "Krishi Gabeshana", "Rice Research", "T & T", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
             "Bus_18_Kallyanpur": ["Kallyanpur", "Technical", "Ansar Camp", "Mirpur - 01", "Soni Hall", "Mirpur - 02", "Mirpur - 10", "Kazipara", "Shewrapara", "Taltala", "Agargaon", "Shaheen College", "Mohakhali Rail Gate", "Amtali", "Soinik Club", "Kakali", "Shewra", "Khilkhet", "Campus"],
             "Bus_20_Soni_Hall": ["Soni Hall", "Mirpur - 02", "Original - 10", "Mirpur - 11", "Purobi Hall", "Palashi", "Kabarsthan", "Kalshi", "ECB Chattar", "MES", "Khilkhet", "Airport", "Campus"],
             "Bus_29_New_Market": ["Gonoshasthya", "Science Lab", "New Market", "City College", "Zigatala", "Dhanmondi 15", "Shankar Bus Stand", "Farmgate", "Kakoli/Banani", "MES", "Khilkhet", "Airport", "Campus"],
-            "Bus_31_Kalshi": ["11.05 (Shara Egaro)", "Dha Block Mour", "Sangbadik Plot", "Byesh Tala", "Kalshi Mour", "Kalshi Bridge", "ECB Chattar", "Mati Kata Baribadh", "Shewra", "Khilkhet", "Kawla", "Airport", "Jashimuddin", "Azampur", "Abdullahpur", "Campus"],
-            "Bus_32_Signboard": ["Signboard", "Matuaile Medical", "Shonir Akra", "Mayor Hanif Flyover", "Jatrabari", "Gulistan", "National Stadium", "Shahbagh", "Banglamotor", "Sonargown Hotel", "Farmgate Pollice Box", "Shahin Hall", "Banani", "MES", "Kowla", "Airport", "Campus"],
-            "Bus_33_Physical": ["Physical", "Noorjahan Road", "Shia Masjid", "Japan Garden City", "Shymoli", "Shaheen School", "Mohakhali Flyover", "Kakoli , Banani", "MES", "House Building", "Abdullahpur", "Campus"]
+            "Bus_31_Kalshi": ["11.05", "Dha Block Mour", "Sangbadik Plot", "Byesh Tala", "Kalshi Mour", "Kalshi Bridge", "ECB Chattar", "Mati Kata", "Shewra", "Khilkhet", "Kawla", "Airport", "Jashimuddin", "Azampur", "Abdullahpur", "Campus"],
+            "Bus_32_Signboard": ["Signboard", "Matuaile Medical", "Shonir Akra", "Hanif Flyover", "Jatrabari", "Gulistan", "National Stadium", "Shahbagh", "Banglamotor", "Sonargown Hotel", "Farmgate", "Shahin Hall", "Banani", "MES", "Kowla", "Airport", "Campus"],
+            "Bus_33_Physical": ["Physical", "Noorjahan Road", "Shia Masjid", "Japan Garden City", "Shymoli", "Shaheen School", "Mohakhali Flyover", "Kakoli", "MES", "House Building", "Abdullahpur", "Campus"]
         };
 
-        const defaultStops = ["Campus"];
-
-        const alarmSelect = document.getElementById("alarmSelect");
-        const etaSelect = document.getElementById("etaStation");
-        let allUniqueStops = new Set();
-        for (let route in routeMatrix) {
-            routeMatrix[route].forEach(stop => allUniqueStops.add(stop));
-        }
-        allUniqueStops.forEach(stop => {
-            let opt = document.createElement("option");
-            opt.value = stop; opt.text = `🔔 Wake me up at ${stop}`;
-            alarmSelect.appendChild(opt);
-
-            let optETA = document.createElement("option");
-            optETA.value = stop; optETA.text = stop;
-            if(etaSelect) etaSelect.appendChild(optETA);
+        const alarmSelect = document.getElementById("alarmSelect"), etaSelect = document.getElementById("etaStation");
+        Object.keys(busStopsCoords).forEach(stop => {
+            let opt = document.createElement("option"); opt.value = stop; opt.text = stop;
+            alarmSelect.appendChild(opt.cloneNode(true)); etaSelect.appendChild(opt);
         });
 
         function populateBusDropdowns() {
-            const fSelect = document.getElementById("fSelect");
-            const tSelect = document.getElementById("tSelect");
-            
-            let defaultOptF = document.createElement("option"); defaultOptF.value = ""; defaultOptF.text = "-- SHOW ALL ACTIVE BUSES --";
-            let defaultOptT = document.createElement("option"); defaultOptT.value = ""; defaultOptT.text = "-- SELECT YOUR BUS --";
-            fSelect.appendChild(defaultOptF); tSelect.appendChild(defaultOptT);
-            
-            for (let bus in routeMatrix) {
-                let optF = document.createElement("option"); optF.value = bus; optF.text = bus.replace(/_/g, ' ');
-                let optT = document.createElement("option"); optT.value = bus; optT.text = bus.replace(/_/g, ' ');
-                fSelect.appendChild(optF); tSelect.appendChild(optT);
-            }
+            const fSelect = document.getElementById("fSelect"), tSelect = document.getElementById("tSelect");
+            fSelect.innerHTML = '<option value="">-- SHOW ALL BUSES --</option>';
+            tSelect.innerHTML = '<option value="">-- SELECT YOUR ROUTE --</option>';
+            Object.keys(routeMatrix).forEach(bus => {
+                let opt = document.createElement("option"); opt.value = bus; opt.text = bus.replace(/_/g, ' ');
+                fSelect.appendChild(opt.cloneNode(true)); tSelect.appendChild(opt);
+            });
         }
-        
         populateBusDropdowns();
 
         function updateStationRoute() {
-            const busSelect = document.getElementById("tSelect").value;
-            const stationSelect = document.getElementById("tStation");
-            stationSelect.innerHTML = '<option value="Unknown">-- Awaiting Bus Selection --</option>';
-            if (busSelect === "") { stationSelect.disabled = true; return; }
-            stationSelect.disabled = false;
-            let routeArray = routeMatrix[busSelect] || defaultStops;
-            routeArray.forEach(stop => {
-                let option = document.createElement("option");
-                option.value = stop; option.text = stop;
-                stationSelect.appendChild(option);
-            });
+            const bus = document.getElementById("tSelect").value, select = document.getElementById("tStation");
+            select.innerHTML = '<option value="Unknown">-- Select Stop --</option>'; select.disabled = !bus;
+            if (bus) routeMatrix[bus].forEach(st => { let opt = document.createElement("option"); opt.value = st; opt.text = st; select.appendChild(opt); });
         }
 
         const firebaseConfig = {
@@ -247,306 +202,82 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        
-        let uName = "";
-        let wakeLock = null;
-        let globalDbData = {}; 
-        let targetAlarmStation = "";
-        let isAlarmTriggered = false;
 
-        // === SECURITY MODULE: SANITIZATION ENGINE ===
-        // Prevents XSS attacks by escaping malicious HTML characters injected into the database.
-        function escapeHTML(str) {
-            if (typeof str !== 'string') return String(str);
-            return str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
-        }
+        let uName = "", wakeLock = null, globalDbData = {}, targetAlarmStation = "", isAlarmTriggered = false;
+
+        function escapeHTML(str) { return String(str).replace(/[&<>"']/g, m => ({'&':'&','<':'<','>':'>','"':'"','\'':''','}[m])); }
 
         function getHaversine(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        function setAlarm() {
-            targetAlarmStation = document.getElementById("alarmSelect").value;
-            isAlarmTriggered = false; 
-        }
-
-        function checkGeofence(currentLat, currentLng) {
-            if (!targetAlarmStation || isAlarmTriggered) return;
-            const target = busStopsCoords[targetAlarmStation];
-            if (!target) return;
-
-            const distKm = getHaversine(currentLat, currentLng, target.lat, target.lng);
-            if (distKm <= 2.0) {
-                isAlarmTriggered = true;
-                if ("vibrate" in navigator) navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 2000]);
-                alert(`⚠️ WAKE UP ALERT!\nThe bus is within ${distKm.toFixed(1)} km of ${targetAlarmStation}. Prepare to disembark.`);
-                document.getElementById("alarmSelect").style.color = "var(--npf-alert)";
-            }
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
         function verifyRouteProximity(lat, lng, busId) {
-            const route = routeMatrix[busId] || defaultStops;
-            let validCoords = [];
-            
-            route.forEach(st => {
-                if (busStopsCoords[st]) validCoords.push(busStopsCoords[st]);
-            });
-            
-            if (validCoords.length < 2) return true; 
-            
-            let minDistance = Infinity;
-            for (let i = 0; i < validCoords.length - 1; i++) {
-                let p1 = validCoords[i]; let p2 = validCoords[i+1];
-                let dx = p2.lng - p1.lng; let dy = p2.lat - p1.lat;
-                let len2 = dx * dx + dy * dy;
-                if (len2 === 0) continue;
-                let t = Math.max(0, Math.min(1, ((lng - p1.lng) * dx + (lat - p1.lat) * dy) / len2));
-                let projX = p1.lng + t * dx; let projY = p1.lat + t * dy;
-                let dist = getHaversine(lat, lng, projY, projX);
-                if (dist < minDistance) minDistance = dist;
-            }
-            return minDistance <= 3.0; 
-        }
-
-        function toggleETAOverlay(show) {
-            document.getElementById('etaOverlay').style.display = show ? 'flex' : 'none';
+            const route = routeMatrix[busId] || ["Campus"]; let minDistance = Infinity;
+            route.forEach(st => { if (busStopsCoords[st]) { let d = getHaversine(lat, lng, busStopsCoords[st].lat, busStopsCoords[st].lng); if (d < minDistance) minDistance = d; } });
+            return minDistance <= 5.0; 
         }
 
         function calculateETA() {
-            let dest = document.getElementById("etaStation").value;
-            if(!dest) { alert("⚠️ Please select your Target Destination first."); return; }
-            let simulatedDistance = Math.floor(Math.random() * 15) + 5; 
-            let speed = 25; 
-            let timeInMinutes = Math.round((simulatedDistance / speed) * 60);
-            alert(`⏱️ TRAJECTORY CALCULATED\n\nDestination: ${dest}\nEstimated Distance: ~${simulatedDistance} km\n\nEstimated Time of Arrival: ${timeInMinutes} minutes.`);
-            document.getElementById('etaDisplay').innerText = `${timeInMinutes} MINS`;
+            let dest = document.getElementById("etaStation").value; if(!dest) return alert("Select Stop");
+            let mins = Math.round((Math.random() * 15) + 5);
+            document.getElementById('etaDisplay').innerText = mins + " MINS";
         }
 
         function activateRealSOS() {
-            let busDrop = document.getElementById("tSelect");
-            let bus = (busDrop && busDrop.value) ? busDrop.value.replace(/_/g, ' ') : "Unknown Bus";
-            
-            let compartment = prompt(`🚨 SOS GEO-BEACON 🚨\n\nEnter the Exact Bus Number or License Plate:`);
-            if(!compartment) return; 
-
-            if (navigator.geolocation) {
-                alert("Acquiring exact GPS coordinates. Please wait...");
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    let lat = position.coords.latitude;
-                    let lon = position.coords.longitude;
-                    let mapsLink = `https://www.google.com/maps?q=$${lat},${lon}`;
-                    let emergencyMessage = `🚨 EMERGENCY! I need help. I am on IUBAT Bus: ${bus}, ID: ${compartment}. My live location is here: ${mapsLink}`;
-                    let whatsappUrl = `https://wa.me/?text=${encodeURIComponent(emergencyMessage)}`;
-                    window.open(whatsappUrl, '_blank');
-                }, function(error) {
-                     alert("🔴 GPS Error: Cannot acquire location. Please ensure location services are turned on.");
-                }, { enableHighAccuracy: true });
-            } else {
-                alert("🔴 Your browser does not support Geolocation.");
-            }
-        }
-
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    document.getElementById('sys-status').innerText = "Wake Lock: Active (Probe)";
-                    wakeLock.addEventListener('release', () => {
-                        if (wID) document.getElementById('sys-status').innerText = "Wake Lock: Released!";
-                    });
-                }
-            } catch (err) { console.error(`Wake Lock Error: ${err.message}`); }
-        }
-
-        document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible' && wID) {
-                await requestWakeLock();
-            }
-        });
-
-        function initApp(mode) {
-            uName = document.getElementById('pName').value;
-            if(!uName) return alert("Verification Required: Enter your Name or Student ID");
-            
-            document.getElementById('gate-screen').style.display = 'none';
-            document.getElementById('app-shell').style.display = 'flex';
-            
-            if (mode === 'broadcast') {
-                document.getElementById('bPanel').style.display = 'block';
-                document.getElementById('tPanel').style.display = 'none';
-                document.getElementById('sys-status').innerText = "Mode: Probe (Ready)";
-            } else {
-                document.getElementById('bPanel').style.display = 'none';
-                document.getElementById('tPanel').style.display = 'block';
-                document.getElementById('sys-status').innerText = "Mode: Detector (Tracking)";
-            }
-            setTimeout(() => { loadMap(); }, 200);
-        }
-
-        let map, markers = {};
-        function applyFilter() { renderMarkers(); }
-
-        function renderMarkers() {
-            const filterVal = document.getElementById('fSelect') ? document.getElementById('fSelect').value : "";
-            const now = Date.now();
-            
-            for(let id in markers) map.removeLayer(markers[id]);
-            
-            const latestByBus = {};
-            for(let k in globalDbData) {
-                const p = globalDbData[k];
-                if (!latestByBus[p.bus] || p.ts > latestByBus[p.bus].ts) {
-                    latestByBus[p.bus] = p;
-                }
-            }
-            
-            for(let busId in latestByBus) {
-                const p = latestByBus[busId];
-                const diffMs = now - p.ts;
-                const diffMins = Math.floor(diffMs / 60000);
-                
-                if (filterVal !== "" && p.bus !== filterVal) continue;
-                if (filterVal !== "") checkGeofence(p.lat, p.lng);
-                
-                if(diffMs < 10800000) { 
-                    let statusUI = diffMins < 2 ? `<span style="color:#00ff88;">● Live Now</span>` : `<span style="color:#fbbf24;">● Last seen ${diffMins} mins ago</span>`;
-                    
-                    // CLEAN DATA: Passing incoming payload strings through the Sanitization Engine
-                    const safeBusName = escapeHTML(p.bus.replace(/_/g, ' '));
-                    const safeUserName = escapeHTML(p.name);
-                    const safeStation = escapeHTML(p.station);
-                    const safeCrowd = escapeHTML(p.crowd);
-                    const safeSeat = escapeHTML(p.seat);
-                    
-                    // PARSE NUMBERS: Enforce rigid numeric types
-                    const safeSpeed = parseInt(p.speed) || 0;
-                    const safeAlt = parseInt(p.alt) || 0;
-                    const safeHdg = parseInt(p.hdg) || 0;
-
-                    markers[busId] = L.marker([p.lat, p.lng]).addTo(map).bindPopup(`
-                        <b style="color:var(--npf-action); font-size:14px;">${safeBusName}</b><br>
-                        Tracker: ${safeUserName}<br>Station: ${safeStation}<br>
-                        Speed: <b>${safeSpeed} KM/H</b><br>
-                        Telemetry: Alt ${safeAlt}m | Hdg ${safeHdg}°<br>
-                        Status: ${statusUI}
-                    `);
-                }
-            }
-        }
-
-        function loadMap() {
-            const bdBounds = L.latLngBounds([23.5, 90.0], [24.2, 90.8]);
-
-            map = L.map('map', {
-                zoomControl: false,
-                maxBounds: bdBounds,         
-                maxBoundsViscosity: 1.0,     
-                minZoom: 10                   
-            }).setView([23.8821, 90.3980], 12);
-            
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
-                maxZoom: 19,
-                noWrap: true,
-                bounds: bdBounds 
-            }).addTo(map);
-
-            db.ref('active_buses').on('value', snap => {
-                globalDbData = snap.val() || {};
-                renderMarkers();
+            let bus = document.getElementById("tSelect").value;
+            let id = prompt("Enter Bus Plate Number:"); if(!id) return;
+            navigator.geolocation.getCurrentPosition(p => {
+                let msg = `🚨 SOS! IUBAT Bus: ${bus}, ID: ${id}. Location: https://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
             });
         }
 
-        let wID = null, lastLat = null, lastLng = null, lastTs = null, sLat = 0, sLng = 0; 
+        function initApp(mode) {
+            uName = document.getElementById('pName').value; if(!uName) return alert("Enter ID");
+            document.getElementById('gate-screen').style.display = 'none'; document.getElementById('app-shell').style.display = 'flex';
+            document.getElementById('bPanel').style.display = mode === 'broadcast' ? 'block' : 'none';
+            document.getElementById('tPanel').style.display = mode === 'track' ? 'block' : 'none';
+            setTimeout(loadMap, 200);
+        }
 
+        let map, markers = {};
+        function loadMap() {
+            map = L.map('map', { zoomControl: false }).setView([23.8821, 90.3980], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+            db.ref('active_buses').on('value', snap => { globalDbData = snap.val() || {}; renderMarkers(); });
+        }
+
+        function renderMarkers() {
+            const filter = document.getElementById('fSelect').value, now = Date.now();
+            Object.keys(markers).forEach(id => map.removeLayer(markers[id])); markers = {};
+            Object.keys(globalDbData).forEach(id => {
+                const p = globalDbData[id]; if (filter && p.bus !== filter) return;
+                if (now - p.ts < 3600000) {
+                    markers[id] = L.marker([p.lat, p.lng]).addTo(map).bindPopup(`<b>${escapeHTML(p.bus)}</b><br>ID: ${escapeHTML(p.name)}<br>Stop: ${escapeHTML(p.station)}<br>Speed: ${p.speed} km/h`);
+                }
+            });
+        }
+
+        let wID = null;
         async function toggleTelemetry() {
-            const btn = document.getElementById('mBtn');
-            const busRoute = document.getElementById('tSelect').value;
-            if(!busRoute) return alert("Select a bus route to begin.");
-
+            const btn = document.getElementById('mBtn'), bus = document.getElementById('tSelect').value;
+            if(!bus) return alert("Select Route");
             if(!wID) {
-                await requestWakeLock();
-
                 wID = navigator.geolocation.watchPosition(pos => {
-                    const cLat = pos.coords.latitude;
-                    const cLng = pos.coords.longitude;
-                    const now = Date.now();
-
-                    const isOnTrack = verifyRouteProximity(cLat, cLng, busRoute);
-                    if (!isOnTrack) {
-                        alert("🚨 FALSE ALARM DETECTED: You are broadcasting from outside the designated route for this bus. Transmission halted and marker erased.");
-                        db.ref('active_buses/' + uName).remove(); 
-                        toggleTelemetry(); 
-                        return;
-                    }
-
-                    const cAlt = Math.round(pos.coords.altitude || 0);
-                    const cHdg = Math.round(pos.coords.heading || 0);
-                    checkGeofence(cLat, cLng);
-
-                    if (lastLat && lastTs) {
-                        const distKm = getHaversine(lastLat, lastLng, cLat, cLng);
-                        const timeHr = (now - lastTs) / 3600000;
-                        if (timeHr > 0 && (distKm / timeHr) > 130) return; 
-                    }
-
-                    const alpha = 0.3;
-                    if (sLat === 0) { sLat = cLat; sLng = cLng; }
-                    sLat = (cLat * alpha) + (sLat * (1 - alpha));
-                    sLng = (cLng * alpha) + (sLng * (1 - alpha));
-                    lastLat = cLat; lastLng = cLng; lastTs = now;
-
-                    let speed = Math.round((pos.coords.speed || 0) * 3.6);
-                    document.getElementById('live-kmh').innerText = speed + " KM/H";
-                    document.getElementById('live-alt').innerText = cAlt;
-                    document.getElementById('live-hdg').innerText = cHdg;
-                    
-                    const payload = {
-                        name: uName, bus: busRoute, station: document.getElementById('tStation').value,
-                        crowd: document.getElementById('tCrowd').value, seat: document.getElementById('tSeat').value,
-                        lat: sLat, lng: sLng, speed: speed, alt: cAlt, hdg: cHdg, ts: now
-                    };
-
-                    const dateStr = new Date().toISOString().split('T')[0];
-                    db.ref(`raw_telemetry/${dateStr}/broadcasts/${uName}`).set(payload);
-                    db.ref('active_buses/' + uName).set(payload);
-                    
+                    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+                    if (!verifyRouteProximity(lat, lng, bus)) { alert("Off Route!"); db.ref('active_buses/' + uName).remove(); return toggleTelemetry(); }
+                    const speed = Math.round((pos.coords.speed || 0) * 3.6);
+                    db.ref('active_buses/' + uName).set({ name: uName, bus: bus, station: document.getElementById('tStation').value, lat: lat, lng: lng, speed: speed, ts: Date.now() });
                     btn.innerText = "HALT BROADCAST"; btn.classList.add('active');
-                }, (err) => {
-                    let errorMsg = err.message;
-                    if(err.code === 1) errorMsg = "Permission Denied. Please allow location access in your browser settings.";
-                    else if(err.code === 2) errorMsg = "Position Unavailable. Make sure your phone's GPS/Location is turned ON.";
-                    else if(err.code === 3) errorMsg = "Timeout. Searching for satellites took too long. Step outside or near a window.";
-                    
-                    alert("🔴 GPS Error: " + errorMsg);
-                    
-                    navigator.geolocation.clearWatch(wID); wID = null;
-                    if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
-                    btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active');
-                    document.getElementById('sys-status').innerText = "Mode: Probe (Standby)";
-
-                }, 
-                { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
+                    document.getElementById('live-kmh').innerText = speed + " KM/H";
+                }, err => alert("🔴 GPS Error: " + err.message), { enableHighAccuracy: true, timeout: 30000, maximumAge: 5000 });
             } else {
-                navigator.geolocation.clearWatch(wID); wID = null;
-                if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
-                btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active');
-                document.getElementById('sys-status').innerText = "Mode: Probe (Standby)";
+                navigator.geolocation.clearWatch(wID); wID = null; btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active');
             }
         }
+        function toggleETAOverlay(s) { document.getElementById('etaOverlay').style.display = s ? 'flex' : 'none'; }
     </script>
 </body>
 </html>
