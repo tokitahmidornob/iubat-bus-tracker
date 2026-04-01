@@ -155,7 +155,7 @@
 
     <script>
         // ==============================================
-        // 1. IUBAT SPECIFIC COORDINATES & ROUTES (FULL FLEET)
+        // 1. IUBAT SPECIFIC COORDINATES & ROUTES
         // ==============================================
         const busStopsCoords = {
             "Campus": {lat: 23.8821, lng: 90.3980},
@@ -209,7 +209,6 @@
 
         const defaultStops = ["Campus"];
 
-        // Dynamic Populator for missing coordinates (Fail-Safe mechanism)
         const alarmSelect = document.getElementById("alarmSelect");
         const etaSelect = document.getElementById("etaStation");
         
@@ -306,7 +305,7 @@
         }
 
         // ==============================================
-        // 3. FALSE ALARM PREVENTION (DYNAMIC SHIELD)
+        // 3. FALSE ALARM PREVENTION
         // ==============================================
         function verifyRouteProximity(lat, lng, busId) {
             const route = routeMatrix[busId] || defaultStops;
@@ -316,7 +315,6 @@
                 if (busStopsCoords[st]) validCoords.push(busStopsCoords[st]);
             });
             
-            // Fail-Safe: If we lack coordinates for the majority of the route, allow the broadcast.
             if (validCoords.length < 2) return true; 
             
             let minDistance = Infinity;
@@ -488,7 +486,7 @@
                     const cLng = pos.coords.longitude;
                     const now = Date.now();
 
-                    const isOnTrack = true; // verifyRouteProximity(cLat, cLng, busRoute);
+                    const isOnTrack = verifyRouteProximity(cLat, cLng, busRoute);
                     if (!isOnTrack) {
                         alert("🚨 FALSE ALARM DETECTED: You are more than 3km outside the designated bus route. Transmission halted to protect the map integrity.");
                         db.ref('active_buses/' + uName).remove(); 
@@ -528,8 +526,24 @@
                     db.ref('active_buses/' + uName).set(payload);
                     
                     btn.innerText = "HALT BROADCAST"; btn.classList.add('active');
-                }, (err) => alert("Geospatial Lock Failed: " + err.message), 
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+                }, (err) => {
+                    // SMART ERROR DECODER AND UI RESET
+                    let errorMsg = err.message;
+                    if(err.code === 1) errorMsg = "Permission Denied. Please allow location access in your browser settings.";
+                    else if(err.code === 2) errorMsg = "Position Unavailable. Make sure your phone's GPS/Location is turned ON.";
+                    else if(err.code === 3) errorMsg = "Timeout. Searching for satellites took too long. Step outside or near a window.";
+                    
+                    alert("🔴 GPS Error: " + errorMsg);
+                    
+                    // Reset the button so it isn't stuck
+                    navigator.geolocation.clearWatch(wID); wID = null;
+                    if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+                    btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active');
+                    document.getElementById('sys-status').innerText = "Mode: Probe (Standby)";
+
+                }, 
+                // RELAXED MOBILE PARAMETERS
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
             } else {
                 navigator.geolocation.clearWatch(wID); wID = null;
                 if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
