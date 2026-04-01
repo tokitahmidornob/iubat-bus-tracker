@@ -8,70 +8,197 @@
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+
         :root { 
-            --npf-base: #182825; --npf-action: #016fb9; 
-            --npf-accent: #22ade1; --npf-alert: #F42A41;
-            --oled-black: #000000; --text-light: #f8fafc;
+            /* EXECUTIVE COLOR PALETTE */
+            --bg-deep: #020617;       /* Deep Slate */
+            --bg-surface: #0f172a;    /* Elevated Slate */
+            --brand-primary: #2563eb; /* Academic Royal Blue */
+            --brand-hover: #1d4ed8;   /* Deep Blue Hover */
+            --accent-cyan: #38bdf8;   /* Tech Cyan */
+            --alert-red: #ef4444;     /* Emergency Red */
+            --alert-hover: #dc2626;   /* Darker Red */
+            --text-main: #f8fafc;     /* Crisp White */
+            --text-muted: #94a3b8;    /* Professional Gray */
+            
+            /* GLASSMORPHISM VARS */
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         
         body, html { 
             margin: 0; padding: 0; height: 100dvh; min-height: -webkit-fill-available;
-            font-family: 'Inter', sans-serif; background: var(--oled-black); 
-            color: var(--text-light); overflow: hidden; 
+            font-family: 'Inter', sans-serif; background: var(--bg-deep); 
+            color: var(--text-main); overflow: hidden; 
         }
         
-        #gate-screen { position: fixed; inset: 0; z-index: 9999; background: var(--oled-black); display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .gate-card { background: var(--npf-base); padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 4px solid var(--npf-action); box-shadow: 0 10px 30px rgba(1, 111, 185, 0.2); }
-        .gate-input { width: 100%; padding: 14px; margin-bottom: 20px; background: var(--oled-black); border: 1px solid #334; color: white; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        /* 1. THE GATEWAY (LOGIN) SCREEN */
+        #gate-screen { 
+            position: fixed; inset: 0; z-index: 9999; 
+            background: linear-gradient(135deg, var(--bg-deep) 0%, #0f172a 100%);
+            display: flex; align-items: center; justify-content: center; padding: 20px; 
+        }
+        .gate-card { 
+            background: var(--glass-bg); padding: 40px; border-radius: 24px; 
+            width: 100%; max-width: 420px; 
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid var(--brand-primary); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--glass-shadow); text-align: center;
+        }
+        .gate-input { 
+            width: 100%; padding: 16px 20px; margin-bottom: 25px; 
+            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); 
+            color: white; border-radius: 12px; box-sizing: border-box; 
+            font-size: 15px; outline: none; transition: all 0.3s ease;
+        }
+        .gate-input:focus { 
+            border-color: var(--accent-cyan); 
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); 
+            background: rgba(0,0,0,0.5);
+        }
         
-        .btn-gate { width: 100%; padding: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; transition: 0.3s; }
-        .btn-track { background: var(--npf-action); color: white; }
-        .btn-broadcast { background: transparent; color: var(--npf-accent); border: 2px solid var(--npf-accent); }
+        /* BUTTON ARCHITECTURE */
+        .btn-gate { 
+            width: 100%; padding: 16px; font-weight: 800; border: none; 
+            border-radius: 12px; cursor: pointer; text-transform: uppercase; 
+            letter-spacing: 1.5px; margin-bottom: 15px; transition: all 0.3s ease; 
+            display: block; font-size: 13px;
+        }
+        .btn-track { 
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover)); 
+            color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); 
+        }
+        .btn-track:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
         
-        #app-shell { display: none; flex-direction: column; height: 100dvh; min-height: -webkit-fill-available; }
-        .header { padding: 12px 20px; background: var(--npf-base); border-bottom: 2px solid var(--npf-action); display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
-        
-        .alarm-bar { background: #0f172a; padding: 8px 20px; border-bottom: 1px solid #334; display: flex; align-items: center; z-index: 1000; gap: 10px; }
-        .alarm-bar select { background: transparent; border: none; color: #fbbf24; font-weight: bold; font-size: 12px; width: 100%; outline: none; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        /* NEW: Button styling for the ETA Intel toggle */
-        .btn-nav { background: #fbbf24; color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; margin-left: auto; }
+        .btn-broadcast { 
+            background: transparent; color: var(--accent-cyan); 
+            border: 2px solid rgba(56, 189, 248, 0.5); 
+        }
+        .btn-broadcast:hover { 
+            border-color: var(--accent-cyan); 
+            background: rgba(56, 189, 248, 0.05); 
+        }
+        .btn-gate:active { transform: scale(0.98); }
 
-        #map { flex-grow: 1; width: 100%; z-index: 1; background: var(--oled-black); min-height: 20vh; }
+        /* 2. MAIN APPLICATION SHELL */
+        #app-shell { display: none; flex-direction: column; height: 100dvh; min-height: -webkit-fill-available; }
         
-        /* NEW: Hidden ETA Overlay Panel */
+        .header { 
+            padding: 16px 24px; background: var(--glass-bg); 
+            border-bottom: 1px solid var(--glass-border); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000; 
+        }
+        
+        /* ALARM & INTELLIGENCE BAR */
+        .alarm-bar { 
+            background: var(--bg-surface); padding: 12px 24px; 
+            border-bottom: 1px solid var(--glass-border); 
+            display: flex; align-items: center; z-index: 1000; gap: 15px; 
+        }
+        .alarm-bar select { 
+            background: transparent; border: none; color: #fbbf24; 
+            font-weight: 800; font-size: 13px; width: 100%; 
+            outline: none; text-transform: uppercase; letter-spacing: 0.5px; 
+            cursor: pointer;
+        }
+        .btn-nav { 
+            background: #fbbf24; color: #78350f; border: none; 
+            padding: 8px 16px; border-radius: 8px; font-size: 11px; 
+            font-weight: 900; cursor: pointer; white-space: nowrap; margin-left: auto; 
+            transition: all 0.2s; box-shadow: 0 2px 10px rgba(251, 191, 36, 0.2);
+        }
+        .btn-nav:hover { transform: translateY(-1px); filter: brightness(1.1); }
+
+        #map { flex-grow: 1; width: 100%; z-index: 1; background: var(--bg-deep); }
+        
+        /* 3. HIDDEN INTELLIGENCE OVERLAY */
         #etaOverlay { 
             display: none; position: fixed; inset: 0; z-index: 2000; 
-            background: var(--oled-black); padding: 30px; 
+            background: rgba(2, 6, 23, 0.85); padding: 30px; 
             flex-direction: column; justify-content: center; 
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
 
+        /* 4. COMMAND CONTROL PANELS (BOTTOM) */
         .panel { 
-            display: none; background: var(--npf-base); padding: 15px; padding-bottom: 25px; 
-            border-top: 2px solid var(--npf-accent); z-index: 1000; max-height: 45dvh; overflow-y: auto; 
+            display: none; background: var(--bg-surface); 
+            padding: 24px; padding-bottom: 35px; 
+            border-top: 1px solid var(--glass-border); z-index: 1000; 
+            max-height: 45dvh; overflow-y: auto; 
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
         }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .grid-sos { display: grid; grid-template-columns: 3.5fr 1fr; gap: 12px; margin-bottom: 12px; }
         
-        /* NEW: Grid for placing the SOS button next to main inputs */
-        .grid-sos { display: grid; grid-template-columns: 3.5fr 1fr; gap: 10px; margin-bottom: 10px; }
+        select { 
+            background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); 
+            color: var(--text-main); padding: 14px 16px; border-radius: 12px; 
+            width: 100%; font-size: 14px; box-sizing: border-box; 
+            appearance: none; cursor: pointer; transition: all 0.3s;
+            font-family: 'Inter', sans-serif; font-weight: 600;
+        }
+        select:focus { border-color: var(--brand-primary); outline: none; }
+        select:disabled { opacity: 0.4; cursor: not-allowed; }
         
-        select { background: var(--oled-black); border: 1px solid #445; color: white; padding: 12px; border-radius: 8px; width: 100%; font-size: 13px; box-sizing: border-box; }
-        select:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* BROADCAST & SOS BUTTONS */
+        .btn-action { 
+            width: 100%; padding: 18px; 
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover)); 
+            color: white; font-weight: 900; border: none; border-radius: 12px; 
+            cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; 
+            margin-top: 8px; flex-shrink: 0; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        .btn-action:active { transform: scale(0.98); }
+        .btn-action.active { 
+            background: linear-gradient(135deg, var(--alert-red), var(--alert-hover)); 
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); 
+            animation: pulse-border 2s infinite;
+        }
         
-        .btn-action { width: 100%; padding: 16px; background: var(--npf-action); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; flex-shrink: 0; }
-        .btn-action.active { background: var(--npf-alert); }
+        .btn-sos-small { 
+            background: linear-gradient(135deg, var(--alert-red), var(--alert-hover)); 
+            color: white; font-size: 13px; letter-spacing: 1px;
+            border-radius: 12px; border: none; font-weight: 900; 
+            cursor: pointer; display: flex; align-items: center; 
+            justify-content: center; margin-top: 8px; 
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); 
+            transition: all 0.3s ease;
+        }
+        .btn-sos-small:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
+        .btn-sos-small:active { transform: scale(0.95); }
         
-        /* NEW: Small SOS Button */
-        .btn-sos-small { background: var(--npf-alert); color: white; font-size: 11px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        /* LEAFLET MAP CUSTOMIZATIONS */
+        .leaflet-popup-content-wrapper { 
+            background: var(--bg-surface) !important; 
+            border: 1px solid var(--glass-border); 
+            color: var(--text-main) !important; 
+            border-radius: 12px !important; 
+            box-shadow: var(--glass-shadow) !important;
+            font-family: 'Inter', sans-serif;
+        }
+        .leaflet-popup-tip { background: var(--bg-surface) !important; }
+        .leaflet-container a.leaflet-popup-close-button { color: var(--text-muted) !important; }
+
+        /* PULSE ANIMATION FOR ACTIVE BROADCAST */
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
     </style>
 </head>
 <body>
 
     <div id="gate-screen">
         <div class="gate-card">
-            <h2 style="color:var(--text-light); margin-top:0; margin-bottom:5px;">IUBAT Bus Command</h2>
-            <p style="color:var(--npf-accent); font-size:12px; margin-bottom:25px; text-transform: uppercase;">Fleet Telemetry & Radar</p>
+            <h2 style="color:var(--text-main); margin-top:0; margin-bottom:5px;">IUBAT Bus Command</h2>
+            <p style="color:var(--accent-cyan); font-size:12px; margin-bottom:25px; text-transform: uppercase;">Fleet Telemetry & Radar</p>
             <input type="text" id="pName" class="gate-input" placeholder="Student Name / ID">
             <button class="btn-gate btn-track" onclick="initApp('track')">I WANT TO TRACK</button>
             <button class="btn-gate btn-broadcast" onclick="initApp('broadcast')">I AM ON THE BUS (PROBE)</button>
@@ -82,7 +209,7 @@
         <h2 style="color: #fbbf24; text-align: center; margin-top: 0; letter-spacing: 2px;">TRAJECTORY INTEL</h2>
         <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Station for ETA Calculation</p>
         <div class="grid">
-            <select id="etaStation" style="border: 1px solid var(--npf-accent);"></select>
+            <select id="etaStation" style="border: 1px solid var(--accent-cyan);"></select>
         </div>
         <div style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
             <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival Time</div>
@@ -96,11 +223,11 @@
         <header class="header">
             <div style="display:flex; flex-direction:column;">
                 <span style="font-weight:bold; font-size:15px; letter-spacing: 1px;">H.O.L.M.E.S. COMMAND</span>
-                <span id="sys-status" style="font-size:11px; color:var(--npf-accent);">Mode: Observer</span>
+                <span id="sys-status" style="font-size:11px; color:var(--accent-cyan);">Mode: Observer</span>
             </div>
             <div style="text-align: right;">
-                <div id="live-kmh" style="font-weight:900; color:var(--text-light); font-size: 22px; line-height: 1;">0 KM/H</div>
-                <div style="font-size: 10px; color: var(--npf-accent); margin-top: 4px; font-family: monospace;">ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°</div>
+                <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 22px; line-height: 1;">0 KM/H</div>
+                <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 4px; font-family: monospace;">ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°</div>
             </div>
         </header>
 
@@ -114,7 +241,7 @@
         <div id="map"></div>
 
         <div class="panel" id="tPanel">
-            <div style="font-size:11px; color:var(--npf-accent); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Live Radar Filter</div>
+            <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Live Radar Filter</div>
             <div class="grid-sos">
                 <select id="fSelect" onchange="applyFilter()"></select> 
                 <button class="btn-sos-small" onclick="activateRealSOS()">SOS</button>
@@ -331,7 +458,7 @@
                 isAlarmTriggered = true;
                 if ("vibrate" in navigator) navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 2000]);
                 alert(`⚠️ WAKE UP ALERT!\nThe bus is within ${distKm.toFixed(1)} km of ${targetAlarmStation}. Prepare to disembark.`);
-                document.getElementById("alarmSelect").style.color = "var(--npf-alert)";
+                document.getElementById("alarmSelect").style.color = "var(--alert-red)";
             }
         }
 
@@ -417,41 +544,58 @@
         });
 
         let map, markers = {};
+        
+        // --- XSS PROTECTION HELPER ---
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
         function applyFilter() { renderMarkers(); }
 
         function renderMarkers() {
-            const filterVal = document.getElementById('fSelect') ? document.getElementById('fSelect').value : "";
+            const filter = document.getElementById('fSelect').value;
             const now = Date.now();
+            Object.keys(markers).forEach(id => map.removeLayer(markers[id]));
+            markers = {};
             
-            for(let id in markers) map.removeLayer(markers[id]);
-            
-            const latestByBus = {};
-            for(let k in globalDbData) {
-                const p = globalDbData[k];
-                if (!latestByBus[p.bus] || p.ts > latestByBus[p.bus].ts) {
-                    latestByBus[p.bus] = p;
-                }
-            }
-            
-            for(let busId in latestByBus) {
-                const p = latestByBus[busId];
-                const diffMs = now - p.ts;
-                const diffMins = Math.floor(diffMs / 60000);
+            Object.keys(globalDbData).forEach(id => {
+                const p = globalDbData[id];
+                if (filter && p.bus !== filter) return;
                 
-                if (filterVal !== "" && p.bus !== filterVal) continue;
-                if (filterVal !== "") checkGeofence(p.lat, p.lng);
+                const ageMs = now - p.ts;
                 
-                if(diffMs < 10800000) { 
-                    let statusUI = diffMins < 2 ? `<span style="color:#00ff88;">● Live Now</span>` : `<span style="color:#fbbf24;">● Last seen ${diffMins} mins ago</span>`;
-                    markers[busId] = L.marker([p.lat, p.lng]).addTo(map).bindPopup(`
-                        <b style="color:var(--npf-action); font-size:14px;">${p.bus.replace(/_/g, ' ')}</b><br>
-                        Tracker: ${p.name}<br>Station: ${p.station}<br>
-                        Speed: <b>${p.speed} KM/H</b><br>
-                        Flight Data: Alt ${p.alt || 0}m | Hdg ${p.hdg || 0}°<br>
-                        Status: ${statusUI}
+                // Only show data from the last 2 hours (7,200,000 ms)
+                if (ageMs < 7200000) {
+                    
+                    // --- TEMPORAL CALCULATION ENGINE ---
+                    const ageMins = Math.floor(ageMs / 60000);
+                    let statusColor, statusText;
+                    
+                    if (ageMins < 2) {
+                        statusColor = "#00ff88"; // Neon Green
+                        statusText = "● Live Now";
+                    } else if (ageMins < 15) {
+                        statusColor = "#fbbf24"; // Warning Yellow
+                        statusText = `● Delayed (${ageMins}m ago)`;
+                    } else {
+                        statusColor = "#F42A41"; // Alert Red
+                        statusText = `● Offline (${ageMins}m ago)`;
+                    }
+                    // -----------------------------------
+
+                    markers[id] = L.marker([p.lat, p.lng]).addTo(map).bindPopup(`
+                        <div style="text-align:center;">
+                            <b style="color:var(--brand-primary); font-size:14px;">${escapeHTML(p.bus.replace(/_/g, ' '))}</b><br>
+                            <span style="font-size:11px;">Node: ${escapeHTML(p.name)}</span><br>
+                            <span style="font-size:11px;">Stoppage: ${escapeHTML(p.station)}</span><br>
+                            <b>${p.speed} KM/H</b> | ${p.alt}m<br>
+                            <span style="color:${statusColor}; font-weight:bold; font-size:11px;">${statusText}</span>
+                        </div>
                     `);
                 }
-            }
+            });
         }
 
         // --- NEW: STRICT MAP BOUNDS INJECTED HERE ---
