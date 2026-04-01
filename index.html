@@ -218,7 +218,7 @@
 
         const alarmSelect = document.getElementById("alarmSelect");
         const etaSelect = document.getElementById("etaStation"); // NEW: Grab ETA dropdown
-        for (let station in stationCoords) {
+        for (let station in stoppageCoords) {
             let opt = document.createElement("option");
             opt.value = station; opt.text = `🔔 Wake me up at ${station}`;
             alarmSelect.appendChild(opt);
@@ -255,7 +255,7 @@
             const tSelect = document.getElementById("tSelect");
             
             let defaultOptF = document.createElement("option"); defaultOptF.value = ""; defaultOptF.text = "-- SHOW ALL ACTIVE BUSES --";
-            let defaultOptT = document.createElement("option"); defaultOptT.value = ""; defaultOptT.text = "-- SELECT YOUR TRAIN --";
+            let defaultOptT = document.createElement("option"); defaultOptT.value = ""; defaultOptT.text = "-- SELECT YOUR BUS --";
             fSelect.appendChild(defaultOptF); tSelect.appendChild(defaultOptT);
             
             for (let train in routeMatrix) {
@@ -270,7 +270,7 @@
         function updateStationRoute() {
             const trainSelect = document.getElementById("tSelect").value;
             const stationSelect = document.getElementById("tStation");
-            stationSelect.innerHTML = '<option value="Unknown">-- Awaiting Train Selection --</option>';
+            stationSelect.innerHTML = '<option value="Unknown">-- Awaiting Bus Selection --</option>';
             if (trainSelect === "") { stationSelect.disabled = true; return; }
             stationSelect.disabled = false;
             let routeArray = routeMatrix[trainSelect] || defaultStations;
@@ -472,7 +472,7 @@
         async function toggleTelemetry() {
             const btn = document.getElementById('mBtn');
             const train = document.getElementById('tSelect').value;
-            if(!train) return alert("Select a train designation to begin.");
+            if(!train) return alert("Select a bus designation to begin.");
 
             if(!wID) {
                 await requestWakeLock();
