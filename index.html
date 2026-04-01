@@ -1,1 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#182825">
+    <title>IUBAT Transport | H.O.L.M.E.S. Command Center</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        :root { 
+            --npf-base: #182825; --npf-action: #4CAF50; 
+            --npf-accent: #81C784; --npf-alert: #F42A41;
+            --oled-black: #000000; --text-light: #f8fafc;
+        }
+        
+        body, html { 
+            margin: 0; padding: 0; height: 100dvh; min-height: -webkit-fill-available;
+            font-family: 'Inter', sans-serif; background: var(--oled-black); 
+            color: var(--text-light); overflow: hidden; 
+        }
+        
+        #gate-screen { position: fixed; inset: 0; z-index: 9999; background: var(--oled-black); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .gate-card { background: var(--npf-base); padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 4px solid var(--npf-action); box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2); }
+        .gate-input { width: 100%; padding: 14px; margin-bottom: 20px; background: var(--oled-black); border: 1px solid #334; color: white; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        
+        .btn-gate { width: 100%; padding: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; transition: 0.3s; }
+        .btn-track { background: var(--npf-action); color: white; }
+        .btn-broadcast { background: transparent; color: var(--npf-accent); border: 2px solid var(--npf-accent); }
+        
+        #app-shell { display: none; flex-direction: column; height: 100dvh; min-height: -webkit-fill-available; }
+        .header { padding: 12px 20px; background: var(--npf-base); border-bottom: 2px solid var(--npf-action); display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+        
+        .alarm-bar { background: #0f172a; padding: 8px 20px; border-bottom: 1px solid #334; display: flex; align-items: center; z-index: 1000; gap: 10px; }
+        .alarm-bar select { background: transparent; border: none; color: #fbbf24; font-weight: bold; font-size: 12px; width: 100%; outline: none; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .btn-nav { background: #fbbf24; color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; margin-left: auto; }
 
+        #map { flex-grow: 1; width: 100%; z-index: 1; background: var(--oled-black); min-height: 20vh; }
+        
+        #etaOverlay { 
+            display: none; position: fixed; inset: 0; z-index: 2000; 
+            background: var(--oled-black); padding: 30px; 
+            flex-direction: column; justify-content: center; 
+        }
+
+        .panel { 
+            display: none; background: var(--npf-base); padding: 15px; padding-bottom: 25px; 
+            border-top: 2px solid var(--npf-accent); z-index: 1000; max-height: 45dvh; overflow-y: auto; 
+        }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .grid-sos { display: grid; grid-template-columns: 3.5fr 1fr; gap: 10px; margin-bottom: 10px; }
+        
+        select { background: var(--oled-black); border: 1px solid #445; color: white; padding: 12px; border-radius: 8px; width: 100%; font-size: 13px; box-sizing: border-box; }
+        select:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-action { width: 100%; padding: 16px; background: var(--npf-action); color: white; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; flex-shrink: 0; }
+        .btn-action.active { background: var(--npf-alert); }
+        .btn-sos-small { background: var(--npf-alert); color: white; font-size: 11px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        
+        .leaflet-popup-content-wrapper { background: #111; border: 1px solid #4CAF50; color: #fff; border-radius: 8px; }
+        .leaflet-popup-tip { background: #111; }
+    </style>
+</head>
+<body>
+
+    <div id="gate-screen">
+        <div class="gate-card">
+            <h2 style="color:var(--text-light); margin-top:0; margin-bottom:5px;">IUBAT Transport</h2>
+            <p style="color:var(--npf-accent); font-size:12px; margin-bottom:25px; text-transform: uppercase;">Fleet Telemetry & Radar</p>
+            <input type="text" id="pName" class="gate-input" placeholder="Student Name / ID">
+            <button class="btn-gate btn-track" onclick="initApp('track')">I WANT TO TRACK</button>
+            <button class="btn-gate btn-broadcast" onclick="initApp('broadcast')">I AM ON THE BUS (PROBE)</button>
+        </div>
+    </div>
+
+    <div id="etaOverlay">
+        <h2 style="color: #fbbf24; text-align: center; margin-top: 0; letter-spacing: 2px;">TRAJECTORY INTEL</h2>
+        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Bus Stop for ETA Calculation</p>
+        <div class="grid">
+            <select id="etaStation" style="border: 1px solid var(--npf-accent);"></select>
+        </div>
+        <div style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
+            <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival Time</div>
+            <span id="etaDisplay" style="color:#fbbf24; font-weight:bold; font-size: 40px;">-- MINS</span>
+        </div>
+        <button class="btn-action" style="background: #8e44ad;" onclick="calculateETA()">RUN CALCULATION</button>
+        <button class="btn-action" style="background: transparent; border: 1px solid #444; margin-top: 20px;" onclick="toggleETAOverlay(false)">RETURN TO RADAR</button>
+    </div>
+
+    <div id="app-shell">
+        <header class="header">
+            <div style="display:flex; flex-direction:column;">
+                <span style="font-weight:bold; font-size:15px; letter-spacing: 1px;">IUBAT BUS COMMAND</span>
+                <span id="sys-status" style="font-size:11px; color:var(--npf-accent);">Mode: Observer</span>
+            </div>
+            <div style="text-align: right;">
+                <div id="live-kmh" style="font-weight:900; color:var(--text-light); font-size: 22px; line-height: 1;">0 KM/H</div>
+                <div style="font-size: 10px; color: var(--npf-accent); margin-top: 4px; font-family: monospace;">ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°</div>
+            </div>
+        </header>
+
+        <div class="alarm-bar">
+            <select id="alarmSelect" onchange="setAlarm()">
+                <option value="">🔔 SET WAKE-UP ALARM (2KM RADIUS) --</option>
+            </select>
+            <button class="btn-nav" onclick="toggleETAOverlay(true)">⏱️ INTEL</button>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="panel" id="tPanel">
+            <div style="font-size:11px; color:var(--npf-accent); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Live Radar Filter (Isolate Bus)</div>
+            <div class="grid-sos">
+                <select id="fSelect" onchange="applyFilter()"></select> 
+                <button class="btn-sos-small" onclick="activateRealSOS()">SOS</button>
+            </div>
+        </div>
+
+        <div class="panel" id="bPanel">
+            <div class="grid">
+                <select id="tSelect" onchange="updateStationRoute()"></select> 
+            </div>
+            <div class="grid">
+                <select id="tStation" disabled>
+                    <option value="Unknown">-- Awaiting Route Selection --</option>
+                </select>
+            </div>
+            <div class="grid-2">
+                <select id="tCrowd">
+                    <option value="Unknown">-- Crowd Level --</option>
+                    <option value="Empty">Almost Empty</option>
+                    <option value="Light">Some Seats Available</option>
+                    <option value="Moderate">Standing Room Only</option>
+                    <option value="Heavy">Extremely Crowded</option>
+                </select>
+                <select id="tSeat">
+                    <option value="Unknown">-- Traffic Intel --</option>
+                    <option value="Clear">Road Clear</option>
+                    <option value="Moderate Traffic">Moderate Traffic</option>
+                    <option value="Heavy Jam">Heavy Jam</option>
+                </select>
+            </div>
+            <div class="grid-sos">
+                <button id="mBtn" class="btn-action" onclick="toggleTelemetry()">INITIATE BROADCAST</button>
+                <button class="btn-sos-small" onclick="activateRealSOS()">SOS</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // ==============================================
+        // 1. IUBAT SPECIFIC COORDINATES & ROUTES
+        // ==============================================
+        const busStopsCoords = {
+            "Campus": {lat: 23.8821, lng: 90.3980},
+            "Kamarpara": {lat: 23.8906, lng: 90.3881},
+            "Abdullahpur": {lat: 23.8784, lng: 90.3989},
+            "House Building": {lat: 23.8761, lng: 90.3985},
+            "Azampur": {lat: 23.8675, lng: 90.4008},
+            "Rajlakshmi": {lat: 23.8642, lng: 90.4001},
+            "Airport": {lat: 23.8515, lng: 90.4073},
+            "Khilkhet": {lat: 23.8285, lng: 90.4215},
+            "Kuril": {lat: 23.8188, lng: 90.4230},
+            "Nutun Bazar": {lat: 23.8051, lng: 90.4243},
+            "Badda": {lat: 23.7805, lng: 90.4267},
+            "ECB Chattar": {lat: 23.8189, lng: 90.3965},
+            "Kalshi": {lat: 23.8217, lng: 90.3831},
+            "Mirpur - 10": {lat: 23.8069, lng: 90.3687},
+            "Tongi": {lat: 23.8900, lng: 90.4000},
+            "Board Bazar": {lat: 23.9427, lng: 90.3804},
+            "Chowrastha": {lat: 23.9893, lng: 90.3725},
+            "Ashulia": {lat: 23.8961, lng: 90.3204},
+            "Baipal": {lat: 23.9482, lng: 90.2764},
+            "Savar": {lat: 23.8384, lng: 90.2674},
+            "Nabinagar": {lat: 23.9011, lng: 90.2655},
+            "Signboard": {lat: 23.6961, lng: 90.4630},
+            "Gulistan": {lat: 23.7259, lng: 90.4124},
+            "Farmgate": {lat: 23.7561, lng: 90.3872},
+            "Mothijheel Shapla Chattar": {lat: 23.7289, lng: 90.4187},
+            "Kaliganj": {lat: 23.9424, lng: 90.5265},
+            "Rajendrapur Cantonment": {lat: 24.0811, lng: 90.4439},
+            "Kallyanpur": {lat: 23.7788, lng: 90.3639},
+            "Physical": {lat: 23.7664, lng: 90.3621}
+        };
+
+        const routeMatrix = {
+            "Bus_01_Kaliganj": ["Kaliganj", "Mohila College", "Pubail College", "Mirer Bazar Chowrastha", "Maju Khan Bazar", "T & T Gate", "K 2 Factory", "West Side of Flyover", "Station Road", "Campus"],
+            "Bus_02_Rampura": ["Rampura Bridge", "Maddhya Badda", "Uttar Badda", "Shahjadpur", "Nuton Bazar", "Narda Bazar", "Bashundhara", "Kuril Bishwa Road", "Bishwa Road", "Khilkhet", "Airport", "Campus"],
+            "Bus_09_Mothijheel": ["Mothijheel Shapla Chattar", "Rajarbagh", "Malibagh Mour", "Mouchak", "Malibagh Rail Gate", "Chowdhury Para", "Hazipara", "Rampura Bazar", "Rampura TV Gate", "Maddhya Badda", "Uttar Badda", "Shahjadpur", "Nuton Bazar", "Narda Bazar", "Bashundhara", "Kuril Bishwa Road", "Bishwa Road", "Khilkhet", "Airport", "Campus"],
+            "Bus_11_Savar": ["Savar", "CRP Gate", "Radio Colony", "J Nagar Dairy Gate", "Bismail", "RAB Gate", "Nabinagar", "Cantonment Board", "Palli Biddut", "Palash Bari", "Baipail Bridge", "Unique", "Jamghara Bazar", "Sarkar Market", "Nasinghapur", "Nischintapur", "Goshbagh", "Zirabo", "Ashulia", "Dhour", "Campus"],
+            "Bus_12_Rajendrapur": ["Rajendrapur Cantonment", "Rajendrapur Chowrastha", "Masterbari", "Purabari", "University Gate", "Salna Bridge", "Nagpara", "Telipara", "Truck Stand", "Campus"],
+            "Bus_13_Konabari": ["Mouchak", "Konabari", "Palli Biddhut", "Bhawal College", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
+            "Bus_14_Shimultali": ["Shimultali", "Salna Road", "Salim Vila", "BADC", "Duet Gate", "Joydebpur Bus Stand", "Shibbari", "Krishi Gabeshana", "Rice Research", "T & T", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
+            "Bus_16_Chandura": ["Chandura", "Baripara", "Kabirpur", "Zerane Bazar", "EPZ", "Baypal", "Unique", "Zamgora Bazar", "Sarker Market", "Norsinghpur", "Zirabo", "Ashulia", "Dhour", "Campus"],
+            "Bus_17_Razbari": ["Razbari", "Kendrio Jame Mosque", "Krishi Gabeshana", "Rice Research", "T & T", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "Campus"],
+            "Bus_18_Kallyanpur": ["Kallyanpur", "Technical", "Ansar Camp", "Mirpur - 01", "Soni Hall", "Mirpur - 02", "Mirpur - 10", "Kazipara", "Shewrapara", "Taltala", "Agargaon", "Shaheen College", "Mohakhali Rail Gate", "Amtali", "Soinik Club", "Kakali", "Shewra", "Khilkhet", "Campus"],
+            "Bus_20_Soni_Hall": ["Soni Hall", "Mirpur - 02", "Original - 10", "Mirpur - 11", "Purobi Hall", "Palashi", "Kabarsthan", "Kalshi", "ECB Chattar", "MES", "Khilkhet", "Airport", "Campus"],
+            "Bus_29_New_Market": ["Gonoshasthya", "Science Lab", "New Market", "City College", "Zigatala", "Dhanmondi 15", "Shankar Bus Stand", "Farmgate", "Kakoli/Banani", "MES", "Khilkhet", "Airport", "Campus"],
+            "Bus_31_Kalshi": ["11.05 (Shara Egaro)", "Dha Block Mour", "Sangbadik Plot", "Byesh Tala", "Kalshi Mour", "Kalshi Bridge", "ECB Chattar", "Mati Kata Baribadh", "Shewra", "Khilkhet", "Kawla", "Airport", "Jashimuddin", "Azampur", "Abdullahpur", "Campus"],
+            "Bus_32_Signboard": ["Signboard", "Matuaile Medical", "Shonir Akra", "Mayor Hanif Flyover", "Jatrabari", "Gulistan", "National Stadium", "Shahbagh", "Banglamotor", "Sonargown Hotel", "Farmgate Pollice Box", "Shahin Hall", "Banani", "MES", "Kowla", "Airport", "Campus"],
+            "Bus_33_Physical": ["Physical", "Noorjahan Road", "Shia Masjid", "Japan Garden City", "Shymoli", "Shaheen School", "Mohakhali Flyover", "Kakoli , Banani", "MES", "House Building", "Abdullahpur", "Campus"]
+        };
+
+        const defaultStops = ["Campus"];
+
+        const alarmSelect = document.getElementById("alarmSelect");
+        const etaSelect = document.getElementById("etaStation");
+        
+        let allUniqueStops = new Set();
+        for (let route in routeMatrix) {
+            routeMatrix[route].forEach(stop => allUniqueStops.add(stop));
+        }
+        
+        allUniqueStops.forEach(stop => {
+            let opt = document.createElement("option");
+            opt.value = stop; opt.text = `🔔 Wake me up at ${stop}`;
+            alarmSelect.appendChild(opt);
+
+            let optETA = document.createElement("option");
+            optETA.value = stop; optETA.text = stop;
+            if(etaSelect) etaSelect.appendChild(optETA);
+        });
+
+        function populateBusDropdowns() {
+            const fSelect = document.getElementById("fSelect");
+            const tSelect = document.getElementById("tSelect");
+            
+            let defaultOptF = document.createElement("option"); defaultOptF.value = ""; defaultOptF.text = "-- SHOW ALL ACTIVE BUSES --";
+            let defaultOptT = document.createElement("option"); defaultOptT.value = ""; defaultOptT.text = "-- SELECT YOUR BUS ROUTE --";
+            fSelect.appendChild(defaultOptF); tSelect.appendChild(defaultOptT);
+            
+            for (let bus in routeMatrix) {
+                let optF = document.createElement("option"); optF.value = bus; optF.text = bus.replace(/_/g, ' ');
+                let optT = document.createElement("option"); optT.value = bus; optT.text = bus.replace(/_/g, ' ');
+                fSelect.appendChild(optF); tSelect.appendChild(optT);
+            }
+        }
+        
+        populateBusDropdowns();
+
+        function updateStationRoute() {
+            const busSelect = document.getElementById("tSelect").value;
+            const stationSelect = document.getElementById("tStation");
+            stationSelect.innerHTML = '<option value="Unknown">-- Awaiting Route Selection --</option>';
+            if (busSelect === "") { stationSelect.disabled = true; return; }
+            stationSelect.disabled = false;
+            let routeArray = routeMatrix[busSelect] || defaultStops;
+            routeArray.forEach(stop => {
+                let option = document.createElement("option");
+                option.value = stop; option.text = stop;
+                stationSelect.appendChild(option);
+            });
+        }
+
+        // ==============================================
+        // 2. FIREBASE UPLINK
+        // ==============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7-YL-HoQA9uijTNFJawBUqZaxarfmRc4",
+            databaseURL: "https://iubat-bus-tracker-58d7a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "iubat-bus-tracker-58d7a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        let uName = "";
+        let wakeLock = null;
+        let globalDbData = {}; 
+        let targetAlarmStation = "";
+        let isAlarmTriggered = false;
+
+        function getHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function setAlarm() {
+            targetAlarmStation = document.getElementById("alarmSelect").value;
+            isAlarmTriggered = false; 
+        }
+
+        function checkGeofence(currentLat, currentLng) {
+            if (!targetAlarmStation || isAlarmTriggered) return;
+            const target = busStopsCoords[targetAlarmStation];
+            if (!target) return;
+
+            const distKm = getHaversine(currentLat, currentLng, target.lat, target.lng);
+            if (distKm <= 2.0) {
+                isAlarmTriggered = true;
+                if ("vibrate" in navigator) navigator.vibrate([1000, 500, 1000, 500, 1000, 500]);
+                alert(`⚠️ WAKE UP ALERT!\nThe bus is within ${distKm.toFixed(1)} km of ${targetAlarmStation}. Prepare to get down.`);
+                document.getElementById("alarmSelect").style.color = "var(--npf-alert)";
+            }
+        }
+
+        // ==============================================
+        // 3. FALSE ALARM PREVENTION
+        // ==============================================
+        function verifyRouteProximity(lat, lng, busId) {
+            const route = routeMatrix[busId] || defaultStops;
+            let validCoords = [];
+            
+            route.forEach(st => {
+                if (busStopsCoords[st]) validCoords.push(busStopsCoords[st]);
+            });
+            
+            if (validCoords.length < 2) return true; 
+            
+            let minDistance = Infinity;
+            for (let i = 0; i < validCoords.length - 1; i++) {
+                let p1 = validCoords[i]; let p2 = validCoords[i+1];
+                let dx = p2.lng - p1.lng; let dy = p2.lat - p1.lat;
+                let len2 = dx * dx + dy * dy;
+                if (len2 === 0) continue;
+                let t = Math.max(0, Math.min(1, ((lng - p1.lng) * dx + (lat - p1.lat) * dy) / len2));
+                let projX = p1.lng + t * dx; let projY = p1.lat + t * dy;
+                let dist = getHaversine(lat, lng, projY, projX);
+                if (dist < minDistance) minDistance = dist;
+            }
+            return minDistance <= 3.0; 
+        }
+
+        function toggleETAOverlay(show) {
+            document.getElementById('etaOverlay').style.display = show ? 'flex' : 'none';
+        }
+
+        function calculateETA() {
+            let dest = document.getElementById("etaStation").value;
+            if(!dest) { alert("⚠️ Please select your Target Destination first."); return; }
+            let simulatedDistance = Math.floor(Math.random() * 15) + 5; 
+            let speed = 25; 
+            let timeInMinutes = Math.round((simulatedDistance / speed) * 60);
+            alert(`⏱️ TRAJECTORY CALCULATED\n\nDestination: ${dest}\nEstimated Distance: ~${simulatedDistance} km\n\nEstimated Time of Arrival: ${timeInMinutes} minutes.`);
+            document.getElementById('etaDisplay').innerText = `${timeInMinutes} MINS`;
+        }
+
+        function activateRealSOS() {
+            let busDrop = document.getElementById("tSelect");
+            let bus = (busDrop && busDrop.value) ? busDrop.value.replace(/_/g, ' ') : "Unknown Bus";
+            
+            let compartment = prompt(`🚨 SOS GEO-BEACON 🚨\n\nEnter your exact Bus Number or License Plate:`);
+            if(!compartment) return; 
+
+            if (navigator.geolocation) {
+                alert("Acquiring exact GPS coordinates. Please wait...");
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    let lat = position.coords.latitude;
+                    let lon = position.coords.longitude;
+                    let mapsLink = `https://www.google.com/maps?q=$${lat},${lon}`;
+                    let emergencyMessage = `🚨 EMERGENCY! I need help. I am on IUBAT Bus: ${bus}, ID: ${compartment}. My live location is here: ${mapsLink}`;
+                    let whatsappUrl = `https://wa.me/?text=${encodeURIComponent(emergencyMessage)}`;
+                    window.open(whatsappUrl, '_blank');
+                }, function(error) {
+                     alert("🔴 GPS Error: Cannot acquire location. Please ensure location services are turned on.");
+                }, { enableHighAccuracy: true });
+            } else {
+                alert("🔴 Your browser does not support Geolocation.");
+            }
+        }
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    document.getElementById('sys-status').innerText = "Wake Lock: Active (Probe)";
+                    wakeLock.addEventListener('release', () => {
+                        if (wID) document.getElementById('sys-status').innerText = "Wake Lock: Released!";
+                    });
+                }
+            } catch (err) { console.error(`Wake Lock Error: ${err.message}`); }
+        }
+
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible' && wID) {
+                await requestWakeLock();
+            }
+        });
+
+        function initApp(mode) {
+            uName = document.getElementById('pName').value;
+            if(!uName) return alert("Verification Required: Enter your Name or Student ID");
+            
+            document.getElementById('gate-screen').style.display = 'none';
+            document.getElementById('app-shell').style.display = 'flex';
+            
+            if (mode === 'broadcast') {
+                document.getElementById('bPanel').style.display = 'block';
+                document.getElementById('tPanel').style.display = 'none';
+                document.getElementById('sys-status').innerText = "Mode: Probe (Ready)";
+            } else {
+                document.getElementById('bPanel').style.display = 'none';
+                document.getElementById('tPanel').style.display = 'block';
+                document.getElementById('sys-status').innerText = "Mode: Detector (Tracking)";
+            }
+            setTimeout(() => { loadMap(); }, 200);
+        }
+
+        let map, markers = {};
+
+        function applyFilter() { renderMarkers(); }
+
+        function renderMarkers() {
+            const filterVal = document.getElementById('fSelect') ? document.getElementById('fSelect').value : "";
+            const now = Date.now();
+            
+            for(let id in markers) map.removeLayer(markers[id]);
+            
+            const latestByBus = {};
+            for(let k in globalDbData) {
+                const p = globalDbData[k];
+                if (!latestByBus[p.bus] || p.ts > latestByBus[p.bus].ts) {
+                    latestByBus[p.bus] = p;
+                }
+            }
+            
+            for(let busId in latestByBus) {
+                const p = latestByBus[busId];
+                const diffMs = now - p.ts;
+                const diffMins = Math.floor(diffMs / 60000);
+                
+                if (filterVal !== "" && p.bus !== filterVal) continue;
+                if (filterVal !== "") checkGeofence(p.lat, p.lng);
+                
+                if(diffMs < 10800000) { 
+                    let statusUI = diffMins < 2 ? `<span style="color:#4CAF50;">● Live Now</span>` : `<span style="color:#fbbf24;">● Last seen ${diffMins} mins ago</span>`;
+                    
+                    const iconStyle = `<div style="background-color: #4CAF50; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px #4CAF50;"></div>`;
+                    const markerIcon = L.divIcon({ html: iconStyle, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
+
+                    markers[busId] = L.marker([p.lat, p.lng], {icon: markerIcon}).addTo(map).bindPopup(`
+                        <b style="color:#4CAF50; font-size:14px;">${p.bus.replace(/_/g, ' ')}</b><br>
+                        Tracker: ${p.name}<br>Next Stop: ${p.station}<br>
+                        Speed: <b>${p.speed} KM/H</b><br>
+                        Capacity: ${p.crowd} | Traffic: ${p.seat}<br>
+                        Status: ${statusUI}
+                    `);
+                }
+            }
+        }
+
+        function loadMap() {
+            const bdBounds = L.latLngBounds([23.5, 90.0], [24.2, 90.8]);
+
+            map = L.map('map', {
+                zoomControl: false,
+                maxBounds: bdBounds,         
+                maxBoundsViscosity: 1.0,     
+                minZoom: 10                  
+            }).setView([23.8821, 90.3980], 12); 
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
+                maxZoom: 19,
+                noWrap: true,
+                bounds: bdBounds 
+            }).addTo(map);
+
+            db.ref('active_buses').on('value', snap => {
+                globalDbData = snap.val() || {};
+                renderMarkers();
+            });
+        }
+
+        let wID = null, lastLat = null, lastLng = null, lastTs = null, sLat = 0, sLng = 0; 
+
+        async function toggleTelemetry() {
+            const btn = document.getElementById('mBtn');
+            const busRoute = document.getElementById('tSelect').value;
+            if(!busRoute) return alert("Select your Bus Route to begin broadcasting.");
+
+            if(!wID) {
+                await requestWakeLock();
+
+                wID = navigator.geolocation.watchPosition(pos => {
+                    const cLat = pos.coords.latitude;
+                    const cLng = pos.coords.longitude;
+                    const now = Date.now();
+
+                    const isOnTrack = verifyRouteProximity(cLat, cLng, busRoute);
+                    if (!isOnTrack) {
+                        alert("🚨 FALSE ALARM DETECTED: You are more than 3km outside the designated bus route. Transmission halted to protect the map integrity.");
+                        db.ref('active_buses/' + uName).remove(); 
+                        toggleTelemetry(); 
+                        return;
+                    }
+
+                    const cAlt = Math.round(pos.coords.altitude || 0);
+                    const cHdg = Math.round(pos.coords.heading || 0);
+                    checkGeofence(cLat, cLng);
+
+                    if (lastLat && lastTs) {
+                        const distKm = getHaversine(lastLat, lastLng, cLat, cLng);
+                        const timeHr = (now - lastTs) / 3600000;
+                        if (timeHr > 0 && (distKm / timeHr) > 130) return; 
+                    }
+
+                    const alpha = 0.3;
+                    if (sLat === 0) { sLat = cLat; sLng = cLng; }
+                    sLat = (cLat * alpha) + (sLat * (1 - alpha));
+                    sLng = (cLng * alpha) + (sLng * (1 - alpha));
+                    lastLat = cLat; lastLng = cLng; lastTs = now;
+
+                    let speed = Math.round((pos.coords.speed || 0) * 3.6);
+                    document.getElementById('live-kmh').innerText = speed + " KM/H";
+                    document.getElementById('live-alt').innerText = cAlt;
+                    document.getElementById('live-hdg').innerText = cHdg;
+                    
+                    const payload = {
+                        name: uName, bus: busRoute, station: document.getElementById('tStation').value,
+                        crowd: document.getElementById('tCrowd').value, seat: document.getElementById('tSeat').value,
+                        lat: sLat, lng: sLng, speed: speed, alt: cAlt, hdg: cHdg, ts: now
+                    };
+
+                    const dateStr = new Date().toISOString().split('T')[0];
+                    db.ref(`raw_telemetry/${dateStr}/broadcasts/${uName}`).set(payload);
+                    db.ref('active_buses/' + uName).set(payload);
+                    
+                    btn.innerText = "HALT BROADCAST"; btn.classList.add('active');
+                }, (err) => {
+                    // SMART ERROR DECODER AND UI RESET
+                    let errorMsg = err.message;
+                    if(err.code === 1) errorMsg = "Permission Denied. Please allow location access in your browser settings.";
+                    else if(err.code === 2) errorMsg = "Position Unavailable. Make sure your phone's GPS/Location is turned ON.";
+                    else if(err.code === 3) errorMsg = "Timeout. Searching for satellites took too long. Step outside or near a window.";
+                    
+                    alert("🔴 GPS Error: " + errorMsg);
+                    
+                    // Reset the button so it isn't stuck
+                    navigator.geolocation.clearWatch(wID); wID = null;
+                    if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+                    btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active');
+                    document.getElementById('sys-status').innerText = "Mode: Probe (Standby)";
+
+                }, 
+                // RELAXED MOBILE PARAMETERS
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
+            } else {
+                navigator.geolocation.clearWatch(wID); wID = null;
+                if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+                btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active');
+                document.getElementById('sys-status').innerText = "Mode: Probe (Standby)";
+            }
+        }
+    </script>
+</body>
+</html>
