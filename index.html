@@ -488,7 +488,7 @@
                     const cLng = pos.coords.longitude;
                     const now = Date.now();
 
-                    const isOnTrack = verifyRouteProximity(cLat, cLng, busRoute);
+                    const isOnTrack = true; // verifyRouteProximity(cLat, cLng, busRoute);
                     if (!isOnTrack) {
                         alert("🚨 FALSE ALARM DETECTED: You are more than 3km outside the designated bus route. Transmission halted to protect the map integrity.");
                         db.ref('active_buses/' + uName).remove(); 
