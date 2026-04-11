@@ -234,19 +234,34 @@
         }
 
         /* 4. COMMAND CONTROL PANELS (BOTTOM) */
-        .panel {
+        #dashboard-deck {
             display: none;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 15px 24px 30px;
+            z-index: 1000;
+        }
+
+        .deck-card {
             background: var(--bg-surface);
-            padding: 24px;
-            padding-bottom: 35px;
+            padding: 20px;
+            border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            z-index: 1000;
-            max-height: 45dvh;
-            overflow-y: auto;
-            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            flex: 1;
+            min-width: 280px;
         }
+        
+        select:focus, input:focus {
+            box-shadow: 0 0 10px var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            outline: none;
+        }
+
+        @keyframes pulseStatus { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         .grid {
             display: grid;
@@ -389,6 +404,16 @@
         </div>
     </div>
 
+    <!-- TERMINATION MODAL -->
+    <div id="departure-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+        <div style="background:var(--glass-bg); padding:30px; border-radius:15px; text-align:center; border:1px solid rgba(255,255,255,0.1); width:80%; max-width:350px;">
+            <h3 style="color:#fff; margin-top:0;">TERMINATE BROADCAST</h3>
+            <p style="color:#aaa; font-size:12px; margin-bottom:20px;">Select your parting transmission protocol.</p>
+            <button class="btn-action" style="background:#F42A41; margin-bottom:10px; width:100%; border:none; box-shadow: 0 4px 15px rgba(244, 42, 65, 0.4);" onclick="stopTelemetry('permanent')">FULL DARK (DELETE)</button>
+            <button class="btn-action" style="background:transparent; width:100%; border:1px solid #c084fc; color:#c084fc;" onclick="stopTelemetry('ghost')">GHOST MODE (10 MINS)</button>
+        </div>
+    </div>
+
     <div id="etaOverlay">
         <h2 style="color: #fbbf24; text-align: center; margin-top: 0; letter-spacing: 2px;">TRAJECTORY INTEL</h2>
         <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Station for ETA Calculation</p>
@@ -403,8 +428,8 @@
         <button class="btn-action" style="background: transparent; border: 1px solid #444; margin-top: 20px;" onclick="toggleETAOverlay(false)">RETURN TO RADAR</button>
     </div>
 
-    <div id="app-shell">
-        <header class="header">
+    <div id="app-shell" style="flex-direction:column; height:100dvh; display:none;">
+        <header class="header" style="display:flex; justify-content:space-between; align-items:center;">
             <!-- Left: Brand -->
             <div style="display:flex; align-items: center; gap: 12px; flex: 1;">
                 <img src="iubat-logo.png" alt="IUBAT Mini Logo" style="width: 32px; height: auto;">
@@ -412,54 +437,54 @@
             </div>
             
             <!-- Center: Mission Status -->
-            <div style="flex: 1; text-align: center; color:var(--accent-cyan); font-weight:bold; font-size: 13px;" id="sys-status">
-                STATUS: ACTIVE // MODE: UNKNOWN
+            <div style="flex: 1; display:flex; justify-content:center;">
+                <div style="background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); padding:8px 16px; border-radius:20px; animation: pulseStatus 2s infinite;">
+                    <span id="sys-status" style="color:var(--accent-cyan); font-weight:bold; font-size: 12px; letter-spacing: 1px;">STATUS: ACTIVE // MODE: UNKNOWN</span>
+                </div>
             </div>
             
-            <!-- Right: Logout & Telemetry -->
+            <!-- Right: Logout -->
             <div style="display:flex; justify-content: flex-end; align-items: center; gap: 15px; flex: 1;">
-                <div style="text-align: right; display:none;" id="telemetry-block">
-                    <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 20px; line-height: 1; font-family: 'Courier New', 'JetBrains Mono', monospace;">0 KM/H</div>
-                    <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 4px; font-family: 'Courier New', 'JetBrains Mono', monospace;">ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°</div>
-                </div>
                 <div style="text-align: right;">
-                    <div id="user-display" style="font-size: 11px; color:#aaa; margin-bottom: 4px; font-family: 'Courier New', 'JetBrains Mono', monospace;">OP: <span id="uNameDisplay">--</span></div>
-                    <button class="btn-gate btn-broadcast" id="logoutBtn" style="padding: 6px 12px; font-size: 10px;" onclick="logout()">LOGOUT</button>
+                    <div id="user-display" style="font-size: 11px; color:#aaa; margin-bottom: 4px; font-family: 'Courier New', 'JetBrains Mono', monospace; text-transform:uppercase;">OP: <span id="uNameDisplay">--</span></div>
+                    <button class="btn-gate btn-broadcast" id="logoutBtn" style="padding: 6px 16px; font-size: 10px;" onclick="logout()">LOGOUT</button>
                 </div>
             </div>
         </header>
 
-        <div class="alarm-bar">
-            <select id="alarmSelect" onchange="setAlarm()">
-                <option value="">🔔 SET WAKE-UP ALARM (5KM RADIUS) --</option>
-            </select>
-            <button class="btn-nav" onclick="toggleETAOverlay(true)">⏱️ INTEL</button>
-        </div>
-
         <div id="map"></div>
 
-        <div class="panel" id="mainPanel">
-            <div id="radar-filter-container">
-                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Live Radar Filter</div>
+        <div id="dashboard-deck">
+            <!-- Card A: RADAR -->
+            <div class="deck-card" id="radar-filter-container">
+                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">RADAR CONTROL</div>
                 <div class="grid">
                     <select id="fSelect" onchange="applyFilter()"></select>
                 </div>
+                <div class="grid" style="margin-top:auto;">
+                    <select id="alarmSelect" onchange="setAlarm()" style="font-size:11px; padding:12px; background:transparent; border:1px solid var(--glass-border); color:#fbbf24; cursor:pointer; font-weight:bold; width:100%;">
+                        <option value="">🔔 SET DESTINATION ALARM --</option>
+                    </select>
+                </div>
+                <div class="grid">
+                    <button class="btn-nav" style="width: 100%; padding:12px; border-radius:8px; background:#fbbf24; color:#78350f; font-weight:900; font-size:11px; cursor:pointer;" onclick="toggleETAOverlay(true)">⏱️ TRAJECTORY INTEL</button>
+                </div>
             </div>
 
-            <div id="probe-controls">
-                <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 15px 0;">
-                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Probe Setup</div>
+            <!-- Card B: PROBE SETUP -->
+            <div class="deck-card" id="probe-controls" style="display:none;">
+                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">PROBE COMMAND</div>
                 <div class="grid">
-                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 4px; letter-spacing: 1px;">FLEET TARGET</label>
+                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 2px;">01. FLEET TARGET</label>
                     <select id="tSelect" onchange="updateStationRoute()"></select>
                 </div>
-                <div class="grid" style="margin-top: 10px;">
-                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 4px; letter-spacing: 1px;">STATION LOCK</label>
+                <div class="grid">
+                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 2px;">02. STATION LOCK</label>
                     <select id="tStation" onchange="checkMissionReady()" disabled>
                         <option value="Unknown">-- Awaiting Bus Selection --</option>
                     </select>
                 </div>
-                <div class="grid-2">
+                <div class="grid-2" style="margin-top:5px;">
                     <select id="tCrowd">
                         <option value="Unknown">-- Crowd Level --</option>
                         <option value="Empty">Empty</option>
@@ -475,8 +500,20 @@
                         <option value="Heavy Jam">Heavy Jam</option>
                     </select>
                 </div>
-                <div class="grid">
-                    <button id="mBtn" class="btn-action" onclick="toggleTelemetry()" disabled style="opacity: 0.5; cursor: not-allowed;">INITIATE BROADCAST (PROBE)</button>
+                <div class="grid" style="margin-top:auto;">
+                    <button id="mBtn" class="btn-action" onclick="toggleTelemetry()" disabled style="opacity: 0.5; padding: 12px; cursor: not-allowed; width: 100%;">INITIATE BROADCAST (PROBE)</button>
+                </div>
+            </div>
+
+            <!-- Card C: TELEMETRY -->
+            <div class="deck-card" id="telemetry-block" style="display:none;">
+                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">TELEMETRY FEED</div>
+                <div style="background:rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center; flex: 1; display:flex; flex-direction:column; justify-content:center;">
+                    <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 32px; line-height: 1.2; font-family: 'JetBrains Mono', 'Courier New', monospace;">0 KM/H</div>
+                    <div style="font-size: 11px; color: var(--accent-cyan); margin-top: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">
+                        LAT: <span id="live-cLat">0.000</span> | LNG: <span id="live-cLng">0.000</span><br><br>
+                        ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°
+                    </div>
                 </div>
             </div>
         </div>
@@ -549,13 +586,49 @@
             }
         }
 
+        // --- SECURE SESSION PERSISTENCE ---
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Operative identified from previous session
+                const idOrEmail = user.email.includes('@student.iubat.edu') 
+                    ? user.email.split('@')[0] 
+                    : user.email;
+                
+                uName = idOrEmail; // Restore global state
+                
+                // Update UI to bypass login and show Selection Briefing
+                document.getElementById('app-shell').style.display = 'none';
+                document.getElementById('gate-screen').style.display = 'flex';
+                document.getElementById('view-student').style.display = 'none';
+                document.getElementById('view-faculty').style.display = 'none';
+                document.querySelector('.auth-tabs').style.display = 'none';
+                document.getElementById('view-selection').style.display = 'flex';
+                
+                console.log("Persistence: Operative " + uName + " re-engaged.");
+            } else {
+                // No active operative, ensure we are at the login gate
+                uName = "";
+                document.getElementById('app-shell').style.display = 'none';
+                document.getElementById('gate-screen').style.display = 'flex';
+                document.getElementById('view-selection').style.display = 'none';
+                if(document.querySelector('.auth-tabs')) document.querySelector('.auth-tabs').style.display = 'flex';
+                
+                if(document.getElementById('studentId')) document.getElementById('studentId').value = "";
+                if(document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
+                if(document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
+                if(document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
+                
+                switchTab('student'); // Default view
+            }
+        });
+
         // --- CRITICAL INITIALIZATION ENGINE ---
         function initApp(mode) {
             // Transition UI from Gate to Command Center
             document.getElementById('gate-screen').style.display = 'none';
             document.getElementById('app-shell').style.display = 'flex';
 
-            const mainPanel = document.getElementById('mainPanel');
+            const deck = document.getElementById('dashboard-deck');
             const probeControls = document.getElementById('probe-controls');
             const radarFilterContainer = document.getElementById('radar-filter-container');
             const status = document.getElementById('sys-status');
@@ -563,7 +636,7 @@
             
             if (uDisplay) uDisplay.innerText = uName;
 
-            if (mainPanel) mainPanel.style.display = 'block';
+            if (deck) deck.style.display = 'flex';
 
             if (mode === 'broadcast') {
                 if (probeControls) probeControls.style.display = 'block';
@@ -587,10 +660,16 @@
             }, 300);
         }
 
+        let pendingLogout = false;
         function logout() {
-            auth.signOut().catch((error) => {
-                alert("Logout Error: " + error.message);
-            });
+            if (wID) {
+                pendingLogout = true;
+                document.getElementById('departure-modal').style.display = 'flex';
+            } else {
+                auth.signOut().catch((error) => {
+                    alert("Logout Error: " + error.message);
+                });
+            }
         }
 
         // --- YOUR EXACT PRESERVED DATABASE ---
@@ -841,6 +920,15 @@
 
                 const ageMs = now - p.ts;
 
+                // Ghost mode purge check
+                if (p.status === 'Inactive' && p.lastActive) {
+                    if (now - p.lastActive > 600000) {
+                        // Older than 10 mins in ghost mode
+                        db.ref('active_buses/' + id).remove();
+                        return;
+                    }
+                }
+
                 // Only show data from the last 2 hours (7,200,000 ms)
                 if (ageMs < 7200000) {
 
@@ -858,9 +946,15 @@
                         statusColor = "#F42A41"; // Alert Red
                         statusText = `● Offline (${ageMins}m ago)`;
                     }
+                    
+                    if (p.status === 'Inactive') {
+                        statusColor = "#c084fc"; // Purple ghost hue
+                        statusText = `LAST ACTIVE: ${ageMins}m ago`;
+                    }
                     // -----------------------------------
 
-                    markers[id] = L.marker([p.lat, p.lng]).addTo(map).bindPopup(`
+                    let opac = (p.status === 'Inactive') ? 0.5 : 1.0;
+                    markers[id] = L.marker([p.lat, p.lng], {opacity: opac}).addTo(map).bindPopup(`
                         <div style="text-align:center;">
                             <b style="color:var(--brand-primary); font-size:14px;">${escapeHTML(p.bus.replace(/_/g, ' '))}</b><br>
                             <span style="font-size:11px;">Node: ${escapeHTML(p.name)}</span><br>
@@ -937,14 +1031,17 @@
                     lastLat = cLat; lastLng = cLng; lastTs = now;
 
                     let speed = Math.round((pos.coords.speed || 0) * 3.6);
-                    document.getElementById('live-kmh').innerText = speed + " KM/H";
-                    document.getElementById('live-alt').innerText = cAlt;
-                    document.getElementById('live-hdg').innerText = cHdg;
+                    if(document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = speed + " KM/H";
+                    if(document.getElementById('live-alt')) document.getElementById('live-alt').innerText = cAlt;
+                    if(document.getElementById('live-hdg')) document.getElementById('live-hdg').innerText = cHdg;
+                    if(document.getElementById('live-cLat')) document.getElementById('live-cLat').innerText = cLat.toFixed(4);
+                    if(document.getElementById('live-cLng')) document.getElementById('live-cLng').innerText = cLng.toFixed(4);
 
                     const payload = {
                         name: uName, bus: train, station: document.getElementById('tStation').value,
                         crowd: document.getElementById('tCrowd').value, seat: document.getElementById('tSeat').value,
-                        lat: sLat, lng: sLng, speed: speed, alt: cAlt, hdg: cHdg, ts: now
+                        lat: sLat, lng: sLng, speed: speed, alt: cAlt, hdg: cHdg, ts: now,
+                        lastActive: now, status: 'Active'
                     };
 
                     const dateStr = new Date().toISOString().split('T')[0];
@@ -955,48 +1052,35 @@
                 }, (err) => alert("Geospatial Lock Failed: " + err.message),
                     { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
             } else {
-                navigator.geolocation.clearWatch(wID); wID = null;
-                if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
-                btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active');
-                document.getElementById('sys-status').innerText = "Mode: Probe (Standby)";
+                document.getElementById('departure-modal').style.display = 'flex';
             }
         }
 
-        // --- SECURE SESSION PERSISTENCE ---
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // Operative identified from previous session
-                const idOrEmail = user.email.includes('@student.iubat.edu') 
-                    ? user.email.split('@')[0] 
-                    : user.email;
-                
-                uName = idOrEmail; // Restore global state
-                
-                // Update UI to bypass login and show Selection Briefing
-                document.getElementById('app-shell').style.display = 'none';
-                document.getElementById('gate-screen').style.display = 'flex';
-                document.getElementById('view-student').style.display = 'none';
-                document.getElementById('view-faculty').style.display = 'none';
-                document.querySelector('.auth-tabs').style.display = 'none';
-                document.getElementById('view-selection').style.display = 'flex';
-                
-                console.log("Persistence: Operative " + uName + " re-engaged.");
-            } else {
-                // No active operative, ensure we are at the login gate
-                uName = "";
-                document.getElementById('app-shell').style.display = 'none';
-                document.getElementById('gate-screen').style.display = 'flex';
-                document.getElementById('view-selection').style.display = 'none';
-                if(document.querySelector('.auth-tabs')) document.querySelector('.auth-tabs').style.display = 'flex';
-                
-                if(document.getElementById('studentId')) document.getElementById('studentId').value = "";
-                if(document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
-                if(document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
-                if(document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
-                
-                switchTab('student'); // Default view
+        function stopTelemetry(mode) {
+            document.getElementById('departure-modal').style.display = 'none';
+            if (wID) { navigator.geolocation.clearWatch(wID); wID = null; }
+            if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+            
+            const btn = document.getElementById('mBtn');
+            if (btn) { btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active'); }
+            document.getElementById('sys-status').innerText = "STATUS: ACTIVE // MODE: PROBE (STANDBY)";
+
+            if (mode === 'permanent') {
+                db.ref('active_buses/' + uName).remove();
+            } else if (mode === 'ghost') {
+                db.ref('active_buses/' + uName).update({
+                    status: 'Inactive',
+                    lastActive: Date.now()
+                });
             }
-        });
+            
+            if (pendingLogout) {
+                pendingLogout = false;
+                auth.signOut().catch(err => alert(err.message));
+            }
+        }
+
+        // -- Observer Engine relocated to Top Scope --
     </script>
 </body>
 
