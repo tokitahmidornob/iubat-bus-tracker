@@ -70,10 +70,10 @@
             border-radius: 24px;
             width: 100%;
             max-width: 420px;
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-top: 4px solid var(--brand-primary);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             box-shadow: var(--glass-shadow);
             text-align: center;
         }
@@ -239,7 +239,9 @@
             background: var(--bg-surface);
             padding: 24px;
             padding-bottom: 35px;
-            border-top: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             z-index: 1000;
             max-height: 45dvh;
             overflow-y: auto;
@@ -379,7 +381,8 @@
             </div>
             
             <div id="view-selection" class="auth-view" style="display: none; text-align: center;">
-                <div style="color:var(--accent-cyan); font-weight:bold; margin-bottom: 15px; font-size: 14px;">IDENTITY VERIFIED // ACCESS GRANTED</div>
+                <div style="color:var(--accent-cyan); font-weight:bold; margin-bottom: 10px; font-size: 14px;">IDENTITY VERIFIED // ACCESS GRANTED</div>
+                <h3 style="color:var(--text-main); margin-top:0; margin-bottom:20px; font-size: 16px; letter-spacing: 1px;">SECURITY CLEARANCE GRANTED.<br>SELECT MISSION PARAMETERS.</h3>
                 <button class="btn-gate btn-track" onclick="initApp('track')" style="margin-bottom: 10px;">ENTER RADAR (TRACKING)</button>
                 <button class="btn-gate btn-broadcast" onclick="initApp('broadcast')">I AM ON THE BUS (PROBE)</button>
             </div>
@@ -388,38 +391,41 @@
 
     <div id="etaOverlay">
         <h2 style="color: #fbbf24; text-align: center; margin-top: 0; letter-spacing: 2px;">TRAJECTORY INTEL</h2>
-        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Station for ETA
-            Calculation</p>
+        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Station for ETA Calculation</p>
         <div class="grid">
             <select id="etaStation" style="border: 1px solid var(--accent-cyan);"></select>
         </div>
-        <div
-            style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
-            <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival
-                Time</div>
+        <div style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
+            <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival Time</div>
             <span id="etaDisplay" style="color:#fbbf24; font-weight:bold; font-size: 40px;">-- MINS</span>
         </div>
         <button class="btn-action" style="background: #8e44ad;" onclick="calculateETA()">RUN CALCULATION</button>
-        <button class="btn-action" style="background: transparent; border: 1px solid #444; margin-top: 20px;"
-            onclick="toggleETAOverlay(false)">RETURN TO RADAR</button>
+        <button class="btn-action" style="background: transparent; border: 1px solid #444; margin-top: 20px;" onclick="toggleETAOverlay(false)">RETURN TO RADAR</button>
     </div>
 
     <div id="app-shell">
         <header class="header">
-            <div style="display:flex; align-items: center; gap: 12px;">
+            <!-- Left: Brand -->
+            <div style="display:flex; align-items: center; gap: 12px; flex: 1;">
                 <img src="iubat-logo.png" alt="IUBAT Mini Logo" style="width: 32px; height: auto;">
-                <div style="display:flex; flex-direction:column;">
-                    <span style="font-weight:900; font-size:16px; letter-spacing: 1.5px; color: #fff;">COMMAND
-                        CENTER</span>
-                    <span id="sys-status" style="font-size:11px; color:var(--accent-cyan); font-weight:bold;">Mode:
-                        Observer</span>
-                </div>
+                <span style="font-weight:900; font-size:16px; letter-spacing: 1.5px; color: #fff;">TRANSPORT COMMAND</span>
             </div>
-            <div style="text-align: right;">
-                <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 22px; line-height: 1;">0
-                    KM/H</div>
-                <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 4px; font-family: monospace;">ALT:
-                    <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°</div>
+            
+            <!-- Center: Mission Status -->
+            <div style="flex: 1; text-align: center; color:var(--accent-cyan); font-weight:bold; font-size: 13px;" id="sys-status">
+                STATUS: ACTIVE // MODE: UNKNOWN
+            </div>
+            
+            <!-- Right: Logout & Telemetry -->
+            <div style="display:flex; justify-content: flex-end; align-items: center; gap: 15px; flex: 1;">
+                <div style="text-align: right; display:none;" id="telemetry-block">
+                    <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 20px; line-height: 1; font-family: 'Courier New', 'JetBrains Mono', monospace;">0 KM/H</div>
+                    <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 4px; font-family: 'Courier New', 'JetBrains Mono', monospace;">ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°</div>
+                </div>
+                <div style="text-align: right;">
+                    <div id="user-display" style="font-size: 11px; color:#aaa; margin-bottom: 4px; font-family: 'Courier New', 'JetBrains Mono', monospace;">OP: <span id="uNameDisplay">--</span></div>
+                    <button class="btn-gate btn-broadcast" id="logoutBtn" style="padding: 6px 12px; font-size: 10px;" onclick="logout()">LOGOUT</button>
+                </div>
             </div>
         </header>
 
@@ -444,9 +450,11 @@
                 <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 15px 0;">
                 <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Probe Setup</div>
                 <div class="grid">
+                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 4px; letter-spacing: 1px;">FLEET TARGET</label>
                     <select id="tSelect" onchange="updateStationRoute()"></select>
                 </div>
-                <div class="grid">
+                <div class="grid" style="margin-top: 10px;">
+                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 4px; letter-spacing: 1px;">STATION LOCK</label>
                     <select id="tStation" onchange="checkMissionReady()" disabled>
                         <option value="Unknown">-- Awaiting Bus Selection --</option>
                     </select>
@@ -551,17 +559,22 @@
             const probeControls = document.getElementById('probe-controls');
             const radarFilterContainer = document.getElementById('radar-filter-container');
             const status = document.getElementById('sys-status');
+            const uDisplay = document.getElementById('uNameDisplay');
+            
+            if (uDisplay) uDisplay.innerText = uName;
 
             if (mainPanel) mainPanel.style.display = 'block';
 
             if (mode === 'broadcast') {
                 if (probeControls) probeControls.style.display = 'block';
                 if (radarFilterContainer) radarFilterContainer.style.display = 'none';
-                if (status) status.innerText = "Mode: Probe (Broadcasting)";
+                if (status) status.innerText = "STATUS: ACTIVE // MODE: PROBE";
+                if (document.getElementById('telemetry-block')) document.getElementById('telemetry-block').style.display = 'block';
             } else {
                 if (probeControls) probeControls.style.display = 'none';
                 if (radarFilterContainer) radarFilterContainer.style.display = 'block';
-                if (status) status.innerText = "Mode: Detector (Tracking)";
+                if (status) status.innerText = "STATUS: ACTIVE // MODE: TRACKING";
+                if (document.getElementById('telemetry-block')) document.getElementById('telemetry-block').style.display = 'none';
             }
 
             // 4. Trigger Tactical Map Load with safety delay
@@ -572,6 +585,27 @@
                     alert("System Error: Mapping Engine (loadMap) not found in script.");
                 }
             }, 300);
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                uName = "";
+                document.getElementById('app-shell').style.display = 'none';
+                document.getElementById('gate-screen').style.display = 'flex';
+                
+                // Reset inputs
+                if(document.getElementById('studentId')) document.getElementById('studentId').value = "";
+                if(document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
+                if(document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
+                if(document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
+                
+                // Reset views
+                document.getElementById('view-selection').style.display = 'none';
+                document.querySelector('.auth-tabs').style.display = 'flex';
+                switchTab('student');
+            }).catch((error) => {
+                alert("Logout Error: " + error.message);
+            });
         }
 
         // --- YOUR EXACT PRESERVED DATABASE ---
