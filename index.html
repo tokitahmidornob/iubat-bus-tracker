@@ -37,7 +37,9 @@
         /* 1. THE GATEWAY (LOGIN) SCREEN */
         #gate-screen { 
             position: fixed; inset: 0; z-index: 9999; 
-            background: linear-gradient(135deg, var(--bg-deep) 0%, #0f172a 100%);
+            background: linear-gradient(135deg, rgba(2, 6, 23, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%), url('iubat-bg.jpg');
+            background-size: cover;
+            background-position: center;
             display: flex; align-items: center; justify-content: center; padding: 20px; 
         }
         .gate-card { 
@@ -197,6 +199,7 @@
 
     <div id="gate-screen">
         <div class="gate-card">
+            <img src="iubat-logo.png" alt="IUBAT Logo" style="width: 80px; height: auto; margin-bottom: 15px;">
             <h2 style="color:var(--text-main); margin-top:0; margin-bottom:5px;">IUBAT Bus Command</h2>
             <p style="color:var(--accent-cyan); font-size:12px; margin-bottom:25px; text-transform: uppercase;">Fleet Telemetry & Radar</p>
             <input type="text" id="pName" class="gate-input" placeholder="Student Name / ID">
@@ -221,9 +224,12 @@
 
     <div id="app-shell">
         <header class="header">
-            <div style="display:flex; flex-direction:column;">
-                <span style="font-weight:bold; font-size:15px; letter-spacing: 1px;">H.O.L.M.E.S. COMMAND</span>
-                <span id="sys-status" style="font-size:11px; color:var(--accent-cyan);">Mode: Observer</span>
+            <div style="display:flex; align-items: center; gap: 12px;">
+                <img src="iubat-logo.png" alt="IUBAT Mini Logo" style="width: 32px; height: auto;">
+                <div style="display:flex; flex-direction:column;">
+                    <span style="font-weight:900; font-size:16px; letter-spacing: 1.5px; color: #fff;">COMMAND CENTER</span>
+                    <span id="sys-status" style="font-size:11px; color:var(--accent-cyan); font-weight:bold;">Mode: Observer</span>
+                </div>
             </div>
             <div style="text-align: right;">
                 <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 22px; line-height: 1;">0 KM/H</div>
