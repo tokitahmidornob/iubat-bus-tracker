@@ -651,16 +651,19 @@
         };
 
         const alarmSelect = document.getElementById("alarmSelect");
-        const etaSelect = document.getElementById("etaStation"); // NEW: Grab ETA dropdown
+        const etaSelect = document.getElementById("etaStation");
         for (let station in stoppageCoords) {
-            let opt = document.createElement("option");
-            opt.value = station; opt.text = `🔔 Wake me up at ${station}`;
-            alarmSelect.appendChild(opt);
-
-            // NEW: Populate ETA dropdown
-            let optETA = document.createElement("option");
-            optETA.value = station; optETA.text = station;
-            if (etaSelect) etaSelect.appendChild(optETA);
+            // BUG FIX #1: Guard against null before appending
+            if (alarmSelect) {
+                let opt = document.createElement("option");
+                opt.value = station; opt.text = `🔔 Wake me up at ${station}`;
+                alarmSelect.appendChild(opt);
+            }
+            if (etaSelect) {
+                let optETA = document.createElement("option");
+                optETA.value = station; optETA.text = station;
+                etaSelect.appendChild(optETA);
+            }
         }
 
         // --- 2. IUBAT 15-ROUTE MATRIX ---
@@ -881,7 +884,7 @@
                             const updateSelect = document.getElementById('updateDefaultBus');
                             if (updateSelect) updateSelect.value = data.defaultBus;
                         }
-                    }).catch(e => console.log("No config found."));
+                    }).catch(e => { /* User has no saved preferences — this is normal for new accounts */ });
 
                     // Update UI to bypass login and show Selection Briefing
                     document.getElementById('app-shell').style.display = 'none';
@@ -891,7 +894,7 @@
                     document.querySelector('.auth-tabs').style.display = 'none';
                     document.getElementById('view-selection').style.display = 'flex';
 
-                    console.log("Persistence: Operative " + uName + " re-engaged.");
+                    // Session restored successfully
                 } else {
                     // No active operative, ensure we are at the login gate
                     uName = "";
@@ -1061,7 +1064,10 @@
                     // -----------------------------------
 
                     let opac = (p.status === 'Inactive') ? 0.5 : 1.0;
-                    let mIconHtml = `\<div style='width:16px; height:16px; background:${statusColor}; border-radius:50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); opacity:${opac};'\>\</div\>`; let mIcon = L.divIcon({ html: mIconHtml, className: 'custom-pin-icon', iconSize: [16, 16], iconAnchor: [8, 8] }); markers[id] = L.marker([p.lat, p.lng], { icon: mIcon }).addTo(map).bindPopup(`
+                    // BUG FIX #2: Removed erroneous backslash escapes from prior Python script injection
+                    let mIconHtml = `<div style='width:16px; height:16px; background:${statusColor}; border-radius:50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); opacity:${opac};'></div>`;
+                    let mIcon = L.divIcon({ html: mIconHtml, className: 'custom-pin-icon', iconSize: [16, 16], iconAnchor: [8, 8] });
+                    markers[id] = L.marker([p.lat, p.lng], { icon: mIcon }).addTo(map).bindPopup(`
                         <div style="text-align:center;">
                             <b style="color:var(--brand-primary); font-size:14px;">${escapeHTML(p.bus.replace(/_/g, ' '))}</b><br>
                             <span style="font-size:11px;">Node: ${escapeHTML(p.name)}</span><br>
