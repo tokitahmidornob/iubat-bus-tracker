@@ -588,22 +588,7 @@
         }
 
         function logout() {
-            auth.signOut().then(() => {
-                uName = "";
-                document.getElementById('app-shell').style.display = 'none';
-                document.getElementById('gate-screen').style.display = 'flex';
-                
-                // Reset inputs
-                if(document.getElementById('studentId')) document.getElementById('studentId').value = "";
-                if(document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
-                if(document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
-                if(document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
-                
-                // Reset views
-                document.getElementById('view-selection').style.display = 'none';
-                document.querySelector('.auth-tabs').style.display = 'flex';
-                switchTab('student');
-            }).catch((error) => {
+            auth.signOut().catch((error) => {
                 alert("Logout Error: " + error.message);
             });
         }
@@ -976,6 +961,42 @@
                 document.getElementById('sys-status').innerText = "Mode: Probe (Standby)";
             }
         }
+
+        // --- SECURE SESSION PERSISTENCE ---
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Operative identified from previous session
+                const idOrEmail = user.email.includes('@student.iubat.edu') 
+                    ? user.email.split('@')[0] 
+                    : user.email;
+                
+                uName = idOrEmail; // Restore global state
+                
+                // Update UI to bypass login and show Selection Briefing
+                document.getElementById('app-shell').style.display = 'none';
+                document.getElementById('gate-screen').style.display = 'flex';
+                document.getElementById('view-student').style.display = 'none';
+                document.getElementById('view-faculty').style.display = 'none';
+                document.querySelector('.auth-tabs').style.display = 'none';
+                document.getElementById('view-selection').style.display = 'flex';
+                
+                console.log("Persistence: Operative " + uName + " re-engaged.");
+            } else {
+                // No active operative, ensure we are at the login gate
+                uName = "";
+                document.getElementById('app-shell').style.display = 'none';
+                document.getElementById('gate-screen').style.display = 'flex';
+                document.getElementById('view-selection').style.display = 'none';
+                if(document.querySelector('.auth-tabs')) document.querySelector('.auth-tabs').style.display = 'flex';
+                
+                if(document.getElementById('studentId')) document.getElementById('studentId').value = "";
+                if(document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
+                if(document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
+                if(document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
+                
+                switchTab('student'); // Default view
+            }
+        });
     </script>
 </body>
 
