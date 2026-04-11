@@ -472,6 +472,8 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
+        let uName = ""; // Secure Global State
+        
         // --- AUTHENTICATION ENGINE ---
         function switchTab(role) {
             let sTab = document.getElementById('tab-student');
@@ -527,11 +529,7 @@
 
         // --- CRITICAL INITIALIZATION ENGINE ---
         function initApp(mode) {
-            // 1. Capture user identity
-            uName = document.getElementById('pName').value;
-            if (!uName) return alert("Verification Required: Enter your Student Name or ID");
-
-            // 2. Transition UI from Gate to Command Center
+            // Transition UI from Gate to Command Center
             document.getElementById('gate-screen').style.display = 'none';
             document.getElementById('app-shell').style.display = 'flex';
 
@@ -667,7 +665,6 @@
         const db = firebase.database();
 
 
-        let uName = "";
         let wakeLock = null;
         let globalDbData = {};
         let targetAlarmStation = "";
