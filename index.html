@@ -377,6 +377,12 @@
                 <button class="btn-gate btn-track" onclick="authAction('faculty', 'login')">SECURE LOGIN</button>
                 <button class="btn-gate btn-broadcast" onclick="authAction('faculty', 'signup')">REGISTER ACCOUNT</button>
             </div>
+            
+            <div id="view-selection" class="auth-view" style="display: none; text-align: center;">
+                <div style="color:var(--accent-cyan); font-weight:bold; margin-bottom: 15px; font-size: 14px;">IDENTITY VERIFIED // ACCESS GRANTED</div>
+                <button class="btn-gate btn-track" onclick="initApp('track')" style="margin-bottom: 10px;">ENTER RADAR (TRACKING)</button>
+                <button class="btn-gate btn-broadcast" onclick="initApp('broadcast')">I AM ON THE BUS (PROBE)</button>
+            </div>
         </div>
     </div>
 
@@ -426,42 +432,42 @@
 
         <div id="map"></div>
 
-        <div class="panel" id="tPanel">
-            <div
-                style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">
-                Live Radar Filter</div>
+        <div class="panel" id="mainPanel">
+            <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Live Radar Filter</div>
             <div class="grid">
                 <select id="fSelect" onchange="applyFilter()"></select>
             </div>
-        </div>
 
-        <div class="panel" id="bPanel">
-            <div class="grid">
-                <select id="tSelect" onchange="updateStationRoute()"></select>
-            </div>
-            <div class="grid">
-                <select id="tStation" disabled>
-                    <option value="Unknown">-- Awaiting Bus Selection --</option>
-                </select>
-            </div>
-            <div class="grid-2">
-                <select id="tCrowd">
-                    <option value="Unknown">-- Crowd Level --</option>
-                    <option value="Empty">Empty</option>
-                    <option value="Light">Light</option>
-                    <option value="Moderate">Moderate</option>
-                    <option value="Heavy">Heavy</option>
-                    <option value="Crush Capacity">Crush Capacity</option>
-                </select>
-                <select id="tSeat">
-                    <option value="Unknown">-- Traffic Intel --</option>
-                    <option value="Seats Available">Seats Available</option>
-                    <option value="Standing Room Only">Standing Room Only</option>
-                    <option value="Heavy Jam">Heavy Jam</option>
-                </select>
-            </div>
-            <div class="grid">
-                <button id="mBtn" class="btn-action" onclick="toggleTelemetry()">INITIATE BROADCAST</button>
+            <div id="probe-controls">
+                <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 15px 0;">
+                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Probe Setup</div>
+                <div class="grid">
+                    <select id="tSelect" onchange="updateStationRoute()"></select>
+                </div>
+                <div class="grid">
+                    <select id="tStation" disabled>
+                        <option value="Unknown">-- Awaiting Bus Selection --</option>
+                    </select>
+                </div>
+                <div class="grid-2">
+                    <select id="tCrowd">
+                        <option value="Unknown">-- Crowd Level --</option>
+                        <option value="Empty">Empty</option>
+                        <option value="Light">Light</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Heavy">Heavy</option>
+                        <option value="Crush Capacity">Crush Capacity</option>
+                    </select>
+                    <select id="tSeat">
+                        <option value="Unknown">-- Traffic Intel --</option>
+                        <option value="Seats Available">Seats Available</option>
+                        <option value="Standing Room Only">Standing Room Only</option>
+                        <option value="Heavy Jam">Heavy Jam</option>
+                    </select>
+                </div>
+                <div class="grid">
+                    <button id="mBtn" class="btn-action" onclick="toggleTelemetry()">INITIATE BROADCAST (PROBE)</button>
+                </div>
             </div>
         </div>
     </div>
@@ -514,14 +520,20 @@
                     .then((userCredential) => {
                         alert("Account Registration Successful. Initiating connection.");
                         uName = finalUName;
-                        initApp('track');
+                        document.getElementById('view-student').style.display = 'none';
+                        document.getElementById('view-faculty').style.display = 'none';
+                        document.querySelector('.auth-tabs').style.display = 'none';
+                        document.getElementById('view-selection').style.display = 'flex';
                     })
                     .catch((error) => alert("Registration Denied :: " + error.message));
             } else if (action === 'login') {
                 auth.signInWithEmailAndPassword(authEmail, pass)
                     .then((userCredential) => {
                         uName = finalUName;
-                        initApp('track');
+                        document.getElementById('view-student').style.display = 'none';
+                        document.getElementById('view-faculty').style.display = 'none';
+                        document.querySelector('.auth-tabs').style.display = 'none';
+                        document.getElementById('view-selection').style.display = 'flex';
                     })
                     .catch((error) => alert("Authentication Failed :: " + error.message));
             }
@@ -533,18 +545,17 @@
             document.getElementById('gate-screen').style.display = 'none';
             document.getElementById('app-shell').style.display = 'flex';
 
-            // 3. Isolate the correct Control Panel
-            const bPanel = document.getElementById('bPanel');
-            const tPanel = document.getElementById('tPanel');
+            const mainPanel = document.getElementById('mainPanel');
+            const probeControls = document.getElementById('probe-controls');
             const status = document.getElementById('sys-status');
 
+            if (mainPanel) mainPanel.style.display = 'block';
+
             if (mode === 'broadcast') {
-                if (bPanel) bPanel.style.display = 'block';
-                if (tPanel) tPanel.style.display = 'none';
+                if (probeControls) probeControls.style.display = 'block';
                 if (status) status.innerText = "Mode: Probe (Broadcasting)";
             } else {
-                if (bPanel) bPanel.style.display = 'none';
-                if (tPanel) tPanel.style.display = 'block';
+                if (probeControls) probeControls.style.display = 'none';
                 if (status) status.innerText = "Mode: Detector (Tracking)";
             }
 
