@@ -801,69 +801,7 @@
         }
 
         // --- SECURE SESSION PERSISTENCE ---
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // Operative identified from previous session
-                const idOrEmail = user.email.includes('@student.iubat.edu')
-                    ? user.email.split('@')[0]
-                    : user.email;
-
-                uName = idOrEmail; // Restore global state
-
-                // Fetch user preferences
-                db.ref('users/' + user.uid).once('value').then(snap => {
-                    const data = snap.val();
-                    if (data && data.defaultBus) {
-                        const tSelect = document.getElementById('tSelect');
-                        const fSelect = document.getElementById('fSelect');
-                        
-                        if (tSelect) {
-                            tSelect.value = data.defaultBus;
-                            setTimeout(() => {
-                                if (typeof updateStationRoute === "function") updateStationRoute();
-                            }, 500);
-                        }
-                        if (fSelect) {
-                            fSelect.value = data.defaultBus;
-                            setTimeout(() => {
-                                if (typeof renderMarkers === "function") renderMarkers();
-                            }, 500);
-                        }
-                        
-                        const hdb = document.getElementById('headerDefaultBus');
-                        if (hdb) hdb.innerText = data.defaultBus.replace(/_/g, ' ');
-
-                        // Pre-fill the settings modal dropdown:
-                        const updateSelect = document.getElementById('updateDefaultBus');
-                        if (updateSelect) updateSelect.value = data.defaultBus;
-                    }
-                }).catch(e => console.log("No config found."));
-
-                // Update UI to bypass login and show Selection Briefing
-                document.getElementById('app-shell').style.display = 'none';
-                document.getElementById('gate-screen').style.display = 'flex';
-                document.getElementById('view-student').style.display = 'none';
-                document.getElementById('view-faculty').style.display = 'none';
-                document.querySelector('.auth-tabs').style.display = 'none';
-                document.getElementById('view-selection').style.display = 'flex';
-
-                console.log("Persistence: Operative " + uName + " re-engaged.");
-            } else {
-                // No active operative, ensure we are at the login gate
-                uName = "";
-                document.getElementById('app-shell').style.display = 'none';
-                document.getElementById('gate-screen').style.display = 'flex';
-                document.getElementById('view-selection').style.display = 'none';
-                if (document.querySelector('.auth-tabs')) document.querySelector('.auth-tabs').style.display = 'flex';
-
-                if (document.getElementById('studentId')) document.getElementById('studentId').value = "";
-                if (document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
-                if (document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
-                if (document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
-
-                switchTab('student'); // Default view
-            }
-        });
+        // Moved to window.onload block along with populateTrainDropdowns() to fix TDZ reference bugs.
 
         // --- CRITICAL INITIALIZATION ENGINE ---
         function initApp(mode) {
@@ -1070,7 +1008,7 @@
             }
         }
 
-        populateTrainDropdowns();
+        // populateTrainDropdowns() call moved to window.onload
 
         function updateStationRoute() {
             const trainSelect = document.getElementById("tSelect").value;
@@ -1128,6 +1066,75 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
+
+        window.addEventListener('load', () => {
+            populateTrainDropdowns();
+
+            // --- SECURE SESSION PERSISTENCE ---
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // Operative identified from previous session
+                    const idOrEmail = user.email.includes('@student.iubat.edu')
+                        ? user.email.split('@')[0]
+                        : user.email;
+
+                    uName = idOrEmail; // Restore global state
+
+                    // Fetch user preferences
+                    db.ref('users/' + user.uid).once('value').then(snap => {
+                        const data = snap.val();
+                        if (data && data.defaultBus) {
+                            const tSelect = document.getElementById('tSelect');
+                            const fSelect = document.getElementById('fSelect');
+                            
+                            if (tSelect) {
+                                tSelect.value = data.defaultBus;
+                                setTimeout(() => {
+                                    if (typeof updateStationRoute === "function") updateStationRoute();
+                                }, 500);
+                            }
+                            if (fSelect) {
+                                fSelect.value = data.defaultBus;
+                                setTimeout(() => {
+                                    if (typeof renderMarkers === "function") renderMarkers();
+                                }, 500);
+                            }
+                            
+                            const hdb = document.getElementById('headerDefaultBus');
+                            if (hdb) hdb.innerText = data.defaultBus.replace(/_/g, ' ');
+
+                            // Pre-fill the settings modal dropdown:
+                            const updateSelect = document.getElementById('updateDefaultBus');
+                            if (updateSelect) updateSelect.value = data.defaultBus;
+                        }
+                    }).catch(e => console.log("No config found."));
+
+                    // Update UI to bypass login and show Selection Briefing
+                    document.getElementById('app-shell').style.display = 'none';
+                    document.getElementById('gate-screen').style.display = 'flex';
+                    document.getElementById('view-student').style.display = 'none';
+                    document.getElementById('view-faculty').style.display = 'none';
+                    document.querySelector('.auth-tabs').style.display = 'none';
+                    document.getElementById('view-selection').style.display = 'flex';
+
+                    console.log("Persistence: Operative " + uName + " re-engaged.");
+                } else {
+                    // No active operative, ensure we are at the login gate
+                    uName = "";
+                    document.getElementById('app-shell').style.display = 'none';
+                    document.getElementById('gate-screen').style.display = 'flex';
+                    document.getElementById('view-selection').style.display = 'none';
+                    if (document.querySelector('.auth-tabs')) document.querySelector('.auth-tabs').style.display = 'flex';
+
+                    if (document.getElementById('studentId')) document.getElementById('studentId').value = "";
+                    if (document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
+                    if (document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
+                    if (document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
+
+                    switchTab('student'); // Default view
+                }
+            });
+        });
 
 
         let wakeLock = null;
