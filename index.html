@@ -1,200 +1,354 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#182825">
     <title>IUBAT Transport</title>
-    
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
 
-        :root { 
+        :root {
             /* EXECUTIVE COLOR PALETTE */
-            --bg-deep: #020617;       /* Deep Slate */
-            --bg-surface: #0f172a;    /* Elevated Slate */
-            --brand-primary: #2563eb; /* Academic Royal Blue */
-            --brand-hover: #1d4ed8;   /* Deep Blue Hover */
-            --accent-cyan: #38bdf8;   /* Tech Cyan */
-            --alert-red: #ef4444;     /* Emergency Red */
-            --alert-hover: #dc2626;   /* Darker Red */
-            --text-main: #f8fafc;     /* Crisp White */
-            --text-muted: #94a3b8;    /* Professional Gray */
-            
+            --bg-deep: #020617;
+            /* Deep Slate */
+            --bg-surface: #0f172a;
+            /* Elevated Slate */
+            --brand-primary: #2563eb;
+            /* Academic Royal Blue */
+            --brand-hover: #1d4ed8;
+            /* Deep Blue Hover */
+            --accent-cyan: #38bdf8;
+            /* Tech Cyan */
+            --alert-red: #ef4444;
+            /* Emergency Red */
+            --alert-hover: #dc2626;
+            /* Darker Red */
+            --text-main: #f8fafc;
+            /* Crisp White */
+            --text-muted: #94a3b8;
+            /* Professional Gray */
+
             /* GLASSMORPHISM VARS */
             --glass-bg: rgba(15, 23, 42, 0.75);
             --glass-border: rgba(255, 255, 255, 0.08);
             --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
-        
-        body, html { 
-            margin: 0; padding: 0; height: 100dvh; min-height: -webkit-fill-available;
-            font-family: 'Inter', sans-serif; background: var(--bg-deep); 
-            color: var(--text-main); overflow: hidden; 
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100dvh;
+            min-height: -webkit-fill-available;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-main);
+            overflow: hidden;
         }
-        
+
         /* 1. THE GATEWAY (LOGIN) SCREEN */
-        #gate-screen { 
-            position: fixed; inset: 0; z-index: 9999; 
+        #gate-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
             background: linear-gradient(135deg, rgba(2, 6, 23, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%), url('iubat-bg.jpg');
             background-size: cover;
             background-position: center;
-            display: flex; align-items: center; justify-content: center; padding: 20px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        .gate-card { 
-            background: var(--glass-bg); padding: 40px; border-radius: 24px; 
-            width: 100%; max-width: 420px; 
+
+        .gate-card {
+            background: var(--glass-bg);
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
             border: 1px solid var(--glass-border);
-            border-top: 4px solid var(--brand-primary); 
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            box-shadow: var(--glass-shadow); text-align: center;
+            border-top: 4px solid var(--brand-primary);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--glass-shadow);
+            text-align: center;
         }
-        .gate-input { 
-            width: 100%; padding: 16px 20px; margin-bottom: 25px; 
-            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); 
-            color: white; border-radius: 12px; box-sizing: border-box; 
-            font-size: 15px; outline: none; transition: all 0.3s ease;
+
+        .gate-input {
+            width: 100%;
+            padding: 16px 20px;
+            margin-bottom: 25px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            color: white;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
         }
-        .gate-input:focus { 
-            border-color: var(--accent-cyan); 
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); 
-            background: rgba(0,0,0,0.5);
+
+        .gate-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+            background: rgba(0, 0, 0, 0.5);
         }
-        
+
         /* BUTTON ARCHITECTURE */
-        .btn-gate { 
-            width: 100%; padding: 16px; font-weight: 800; border: none; 
-            border-radius: 12px; cursor: pointer; text-transform: uppercase; 
-            letter-spacing: 1.5px; margin-bottom: 15px; transition: all 0.3s ease; 
-            display: block; font-size: 13px;
+        .btn-gate {
+            width: 100%;
+            padding: 16px;
+            font-weight: 800;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            display: block;
+            font-size: 13px;
         }
-        .btn-track { 
-            background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover)); 
-            color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); 
+
+        .btn-track {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover));
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
         }
-        .btn-track:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
-        
-        .btn-broadcast { 
-            background: transparent; color: var(--accent-cyan); 
-            border: 2px solid rgba(56, 189, 248, 0.5); 
+
+        .btn-track:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
         }
-        .btn-broadcast:hover { 
-            border-color: var(--accent-cyan); 
-            background: rgba(56, 189, 248, 0.05); 
+
+        .btn-broadcast {
+            background: transparent;
+            color: var(--accent-cyan);
+            border: 2px solid rgba(56, 189, 248, 0.5);
         }
-        .btn-gate:active { transform: scale(0.98); }
+
+        .btn-broadcast:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .btn-gate:active {
+            transform: scale(0.98);
+        }
+
+        /* AUTHENTICATION TABS */
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+        .tab-btn { flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; color: var(--text-main); background: transparent; border: 1px solid var(--glass-border); }
+        .tab-btn.active { background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover)); border-color: transparent; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+        .tab-btn:hover:not(.active) { border-color: var(--accent-cyan); background: rgba(56, 189, 248, 0.05); }
+        .auth-view { display: flex; flex-direction: column; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* 2. MAIN APPLICATION SHELL */
-        #app-shell { display: none; flex-direction: column; height: 100dvh; min-height: -webkit-fill-available; }
-        
-        .header { 
-            padding: 16px 24px; background: var(--glass-bg); 
-            border-bottom: 1px solid var(--glass-border); 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000; 
+        #app-shell {
+            display: none;
+            flex-direction: column;
+            height: 100dvh;
+            min-height: -webkit-fill-available;
         }
-        
+
+        .header {
+            padding: 16px 24px;
+            background: var(--glass-bg);
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
         /* ALARM & INTELLIGENCE BAR */
-        .alarm-bar { 
-            background: var(--bg-surface); padding: 12px 24px; 
-            border-bottom: 1px solid var(--glass-border); 
-            display: flex; align-items: center; z-index: 1000; gap: 15px; 
+        .alarm-bar {
+            background: var(--bg-surface);
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            gap: 15px;
         }
-        .alarm-bar select { 
-            background: transparent; border: none; color: #fbbf24; 
-            font-weight: 800; font-size: 13px; width: 100%; 
-            outline: none; text-transform: uppercase; letter-spacing: 0.5px; 
+
+        .alarm-bar select {
+            background: transparent;
+            border: none;
+            color: #fbbf24;
+            font-weight: 800;
+            font-size: 13px;
+            width: 100%;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             cursor: pointer;
         }
-        .btn-nav { 
-            background: #fbbf24; color: #78350f; border: none; 
-            padding: 8px 16px; border-radius: 8px; font-size: 11px; 
-            font-weight: 900; cursor: pointer; white-space: nowrap; margin-left: auto; 
-            transition: all 0.2s; box-shadow: 0 2px 10px rgba(251, 191, 36, 0.2);
-        }
-        .btn-nav:hover { transform: translateY(-1px); filter: brightness(1.1); }
 
-        #map { flex-grow: 1; width: 100%; z-index: 1; background: var(--bg-deep); }
-        
+        .btn-nav {
+            background: #fbbf24;
+            color: #78350f;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+            white-space: nowrap;
+            margin-left: auto;
+            transition: all 0.2s;
+            box-shadow: 0 2px 10px rgba(251, 191, 36, 0.2);
+        }
+
+        .btn-nav:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+
+        #map {
+            flex-grow: 1;
+            width: 100%;
+            z-index: 1;
+            background: var(--bg-deep);
+        }
+
         /* 3. HIDDEN INTELLIGENCE OVERLAY */
-        #etaOverlay { 
-            display: none; position: fixed; inset: 0; z-index: 2000; 
-            background: rgba(2, 6, 23, 0.85); padding: 30px; 
-            flex-direction: column; justify-content: center; 
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        #etaOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(2, 6, 23, 0.85);
+            padding: 30px;
+            flex-direction: column;
+            justify-content: center;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
 
         /* 4. COMMAND CONTROL PANELS (BOTTOM) */
-        .panel { 
-            display: none; background: var(--bg-surface); 
-            padding: 24px; padding-bottom: 35px; 
-            border-top: 1px solid var(--glass-border); z-index: 1000; 
-            max-height: 45dvh; overflow-y: auto; 
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        .panel {
+            display: none;
+            background: var(--bg-surface);
+            padding: 24px;
+            padding-bottom: 35px;
+            border-top: 1px solid var(--glass-border);
+            z-index: 1000;
+            max-height: 45dvh;
+            overflow-y: auto;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
         }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .grid-sos { display: grid; grid-template-columns: 3.5fr 1fr; gap: 12px; margin-bottom: 12px; }
-        
-        select { 
-            background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); 
-            color: var(--text-main); padding: 14px 16px; border-radius: 12px; 
-            width: 100%; font-size: 14px; box-sizing: border-box; 
-            appearance: none; cursor: pointer; transition: all 0.3s;
-            font-family: 'Inter', sans-serif; font-weight: 600;
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
         }
-        select:focus { border-color: var(--brand-primary); outline: none; }
-        select:disabled { opacity: 0.4; cursor: not-allowed; }
-        
-        /* BROADCAST & SOS BUTTONS */
-        .btn-action { 
-            width: 100%; padding: 18px; 
-            background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover)); 
-            color: white; font-weight: 900; border: none; border-radius: 12px; 
-            cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; 
-            margin-top: 8px; flex-shrink: 0; transition: all 0.3s ease;
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        select {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 14px 16px;
+            border-radius: 12px;
+            width: 100%;
+            font-size: 14px;
+            box-sizing: border-box;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+        }
+
+        select:focus {
+            border-color: var(--brand-primary);
+            outline: none;
+        }
+
+        select:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* BROADCAST BUTTONS */
+        .btn-action {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover));
+            color: white;
+            font-weight: 900;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 8px;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
         }
-        .btn-action:active { transform: scale(0.98); }
-        .btn-action.active { 
-            background: linear-gradient(135deg, var(--alert-red), var(--alert-hover)); 
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); 
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        .btn-action.active {
+            background: linear-gradient(135deg, var(--alert-red), var(--alert-hover));
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
             animation: pulse-border 2s infinite;
         }
-        
-        .btn-sos-small { 
-            background: linear-gradient(135deg, var(--alert-red), var(--alert-hover)); 
-            color: white; font-size: 13px; letter-spacing: 1px;
-            border-radius: 12px; border: none; font-weight: 900; 
-            cursor: pointer; display: flex; align-items: center; 
-            justify-content: center; margin-top: 8px; 
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); 
-            transition: all 0.3s ease;
-        }
-        .btn-sos-small:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
-        .btn-sos-small:active { transform: scale(0.95); }
-        
+
         /* LEAFLET MAP CUSTOMIZATIONS */
-        .leaflet-popup-content-wrapper { 
-            background: var(--bg-surface) !important; 
-            border: 1px solid var(--glass-border); 
-            color: var(--text-main) !important; 
-            border-radius: 12px !important; 
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-surface) !important;
+            border: 1px solid var(--glass-border);
+            color: var(--text-main) !important;
+            border-radius: 12px !important;
             box-shadow: var(--glass-shadow) !important;
             font-family: 'Inter', sans-serif;
         }
-        .leaflet-popup-tip { background: var(--bg-surface) !important; }
-        .leaflet-container a.leaflet-popup-close-button { color: var(--text-muted) !important; }
+
+        .leaflet-popup-tip {
+            background: var(--bg-surface) !important;
+        }
+
+        .leaflet-container a.leaflet-popup-close-button {
+            color: var(--text-muted) !important;
+        }
 
         /* PULSE ANIMATION FOR ACTIVE BROADCAST */
         @keyframes pulse-border {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div id="gate-screen">
@@ -202,24 +356,46 @@
             <img src="iubat-logo.png" alt="IUBAT Logo" style="width: 80px; height: auto; margin-bottom: 15px;">
             <h2 style="color:var(--text-main); margin-top:0; margin-bottom:5px;">IUBAT Bus Command</h2>
             <p style="color:var(--accent-cyan); font-size:12px; margin-bottom:25px; text-transform: uppercase;">Fleet Telemetry & Radar</p>
-            <input type="text" id="pName" class="gate-input" placeholder="Student Name / ID">
-            <button class="btn-gate btn-track" onclick="initApp('track')">I WANT TO TRACK</button>
-            <button class="btn-gate btn-broadcast" onclick="initApp('broadcast')">I AM ON THE BUS (PROBE)</button>
+            
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="switchTab('student')" id="tab-student">Student</button>
+                <button class="tab-btn" onclick="switchTab('faculty')" id="tab-faculty">Faculty</button>
+            </div>
+
+            <div id="view-student" class="auth-view">
+                <input type="text" id="studentId" class="gate-input" placeholder="Student ID (Max 8 Digits)">
+                <input type="password" id="studentPass" class="gate-input" placeholder="Password (Min 6 chars)">
+                
+                <button class="btn-gate btn-track" onclick="authAction('student', 'login')">SECURE LOGIN</button>
+                <button class="btn-gate btn-broadcast" onclick="authAction('student', 'signup')">REGISTER ACCOUNT</button>
+            </div>
+
+            <div id="view-faculty" class="auth-view" style="display: none;">
+                <input type="email" id="facultyEmail" class="gate-input" placeholder="Faculty Email (@iubat.edu)">
+                <input type="password" id="facultyPass" class="gate-input" placeholder="Password (Min 6 chars)">
+                
+                <button class="btn-gate btn-track" onclick="authAction('faculty', 'login')">SECURE LOGIN</button>
+                <button class="btn-gate btn-broadcast" onclick="authAction('faculty', 'signup')">REGISTER ACCOUNT</button>
+            </div>
         </div>
     </div>
 
     <div id="etaOverlay">
         <h2 style="color: #fbbf24; text-align: center; margin-top: 0; letter-spacing: 2px;">TRAJECTORY INTEL</h2>
-        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Station for ETA Calculation</p>
+        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Station for ETA
+            Calculation</p>
         <div class="grid">
             <select id="etaStation" style="border: 1px solid var(--accent-cyan);"></select>
         </div>
-        <div style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
-            <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival Time</div>
+        <div
+            style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
+            <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival
+                Time</div>
             <span id="etaDisplay" style="color:#fbbf24; font-weight:bold; font-size: 40px;">-- MINS</span>
         </div>
         <button class="btn-action" style="background: #8e44ad;" onclick="calculateETA()">RUN CALCULATION</button>
-        <button class="btn-action" style="background: transparent; border: 1px solid #444; margin-top: 20px;" onclick="toggleETAOverlay(false)">RETURN TO RADAR</button>
+        <button class="btn-action" style="background: transparent; border: 1px solid #444; margin-top: 20px;"
+            onclick="toggleETAOverlay(false)">RETURN TO RADAR</button>
     </div>
 
     <div id="app-shell">
@@ -227,13 +403,17 @@
             <div style="display:flex; align-items: center; gap: 12px;">
                 <img src="iubat-logo.png" alt="IUBAT Mini Logo" style="width: 32px; height: auto;">
                 <div style="display:flex; flex-direction:column;">
-                    <span style="font-weight:900; font-size:16px; letter-spacing: 1.5px; color: #fff;">COMMAND CENTER</span>
-                    <span id="sys-status" style="font-size:11px; color:var(--accent-cyan); font-weight:bold;">Mode: Observer</span>
+                    <span style="font-weight:900; font-size:16px; letter-spacing: 1.5px; color: #fff;">COMMAND
+                        CENTER</span>
+                    <span id="sys-status" style="font-size:11px; color:var(--accent-cyan); font-weight:bold;">Mode:
+                        Observer</span>
                 </div>
             </div>
             <div style="text-align: right;">
-                <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 22px; line-height: 1;">0 KM/H</div>
-                <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 4px; font-family: monospace;">ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°</div>
+                <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 22px; line-height: 1;">0
+                    KM/H</div>
+                <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 4px; font-family: monospace;">ALT:
+                    <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°</div>
             </div>
         </header>
 
@@ -247,16 +427,17 @@
         <div id="map"></div>
 
         <div class="panel" id="tPanel">
-            <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Live Radar Filter</div>
-            <div class="grid-sos">
-                <select id="fSelect" onchange="applyFilter()"></select> 
-                <button class="btn-sos-small" onclick="activateRealSOS()">SOS</button>
+            <div
+                style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">
+                Live Radar Filter</div>
+            <div class="grid">
+                <select id="fSelect" onchange="applyFilter()"></select>
             </div>
         </div>
 
         <div class="panel" id="bPanel">
             <div class="grid">
-                <select id="tSelect" onchange="updateStationRoute()"></select> 
+                <select id="tSelect" onchange="updateStationRoute()"></select>
             </div>
             <div class="grid">
                 <select id="tStation" disabled>
@@ -279,47 +460,100 @@
                     <option value="Heavy Jam">Heavy Jam</option>
                 </select>
             </div>
-            <div class="grid-sos">
+            <div class="grid">
                 <button id="mBtn" class="btn-action" onclick="toggleTelemetry()">INITIATE BROADCAST</button>
-                <button class="btn-sos-small" onclick="activateRealSOS()">SOS</button>
             </div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
+        // --- AUTHENTICATION ENGINE ---
+        function switchTab(role) {
+            let sTab = document.getElementById('tab-student');
+            let fTab = document.getElementById('tab-faculty');
+            if (sTab) sTab.classList.toggle('active', role === 'student');
+            if (fTab) fTab.classList.toggle('active', role === 'faculty');
+            
+            let vStu = document.getElementById('view-student');
+            let vFac = document.getElementById('view-faculty');
+            if (vStu) vStu.style.display = (role === 'student') ? 'flex' : 'none';
+            if (vFac) vFac.style.display = (role === 'faculty') ? 'flex' : 'none';
+        }
+
+        function authAction(role, action) {
+            let authEmail = "";
+            let pass = "";
+            let finalUName = "";
+
+            if (role === 'student') {
+                let id = document.getElementById('studentId').value.trim();
+                pass = document.getElementById('studentPass').value.trim();
+                const studentRegex = /^\d{1,8}$/;
+                if (!studentRegex.test(id)) return alert("Invalid Student ID. Must be up to 8 numbers only.");
+                authEmail = id + "@student.iubat.edu";
+                finalUName = id;
+            } else if (role === 'faculty') {
+                let email = document.getElementById('facultyEmail').value.trim();
+                pass = document.getElementById('facultyPass').value.trim();
+                if (!email.endsWith('@iubat.edu')) return alert("Invalid Faculty Email. Must use an @iubat.edu domain.");
+                authEmail = email;
+                finalUName = email;
+            }
+
+            if (pass.length < 6) return alert("Security Error: Password must be at least 6 characters.");
+
+            if (action === 'signup') {
+                auth.createUserWithEmailAndPassword(authEmail, pass)
+                    .then((userCredential) => {
+                        alert("Account Registration Successful. Initiating connection.");
+                        uName = finalUName;
+                        initApp('track');
+                    })
+                    .catch((error) => alert("Registration Denied :: " + error.message));
+            } else if (action === 'login') {
+                auth.signInWithEmailAndPassword(authEmail, pass)
+                    .then((userCredential) => {
+                        uName = finalUName;
+                        initApp('track');
+                    })
+                    .catch((error) => alert("Authentication Failed :: " + error.message));
+            }
+        }
+
         // --- CRITICAL INITIALIZATION ENGINE ---
         function initApp(mode) {
             // 1. Capture user identity
             uName = document.getElementById('pName').value;
-            if(!uName) return alert("Verification Required: Enter your Student Name or ID");
-            
+            if (!uName) return alert("Verification Required: Enter your Student Name or ID");
+
             // 2. Transition UI from Gate to Command Center
             document.getElementById('gate-screen').style.display = 'none';
             document.getElementById('app-shell').style.display = 'flex';
-            
+
             // 3. Isolate the correct Control Panel
             const bPanel = document.getElementById('bPanel');
             const tPanel = document.getElementById('tPanel');
             const status = document.getElementById('sys-status');
 
             if (mode === 'broadcast') {
-                if(bPanel) bPanel.style.display = 'block';
-                if(tPanel) tPanel.style.display = 'none';
-                if(status) status.innerText = "Mode: Probe (Broadcasting)";
+                if (bPanel) bPanel.style.display = 'block';
+                if (tPanel) tPanel.style.display = 'none';
+                if (status) status.innerText = "Mode: Probe (Broadcasting)";
             } else {
-                if(bPanel) bPanel.style.display = 'none';
-                if(tPanel) tPanel.style.display = 'block';
-                if(status) status.innerText = "Mode: Detector (Tracking)";
+                if (bPanel) bPanel.style.display = 'none';
+                if (tPanel) tPanel.style.display = 'block';
+                if (status) status.innerText = "Mode: Detector (Tracking)";
             }
-            
+
             // 4. Trigger Tactical Map Load with safety delay
-            setTimeout(() => { 
+            setTimeout(() => {
                 if (typeof loadMap === "function") {
-                    loadMap(); 
+                    loadMap();
                 } else {
                     alert("System Error: Mapping Engine (loadMap) not found in script.");
                 }
@@ -329,24 +563,24 @@
         // --- YOUR EXACT PRESERVED DATABASE ---
         // --- 1. IUBAT STOPPAGE COORDINATES ---
         const stoppageCoords = {
-            "IUBAT Campus": {lat: 23.8821, lng: 90.3980}, "Kamarpara": {lat: 23.8906, lng: 90.3881},
-            "Abdullahpur": {lat: 23.8784, lng: 90.3989}, "House Building": {lat: 23.8761, lng: 90.3985},
-            "Azampur": {lat: 23.8675, lng: 90.4008}, "Rajlakshmi": {lat: 23.8642, lng: 90.4001},
-            "Airport": {lat: 23.8515, lng: 90.4073}, "Khilkhet": {lat: 23.8285, lng: 90.4215},
-            "Kuril": {lat: 23.8188, lng: 90.4230}, "Natun Bazar": {lat: 23.8051, lng: 90.4243},
-            "Badda": {lat: 23.7805, lng: 90.4267}, "ECB Chattar": {lat: 23.8189, lng: 90.3965},
-            "Kalshi": {lat: 23.8217, lng: 90.3831}, "Mirpur - 10": {lat: 23.8069, lng: 90.3687},
-            "Tongi": {lat: 23.8900, lng: 90.4000}, "Board Bazar": {lat: 23.9427, lng: 90.3804},
-            "Chowrastha": {lat: 23.9893, lng: 90.3725}, "Ashulia": {lat: 23.8961, lng: 90.3204},
-            "Baipal": {lat: 23.9482, lng: 90.2764}, "Savar": {lat: 23.8384, lng: 90.2674},
-            "Signboard": {lat: 23.6961, lng: 90.4630}, "Gulistan": {lat: 23.7259, lng: 90.4124},
-            "Farmgate": {lat: 23.7561, lng: 90.3872}, "Mothijheel": {lat: 23.7289, lng: 90.4187},
-            "Kaliganj": {lat: 23.9424, lng: 90.5265}, "Rajendrapur": {lat: 24.0811, lng: 90.4439},
-            "Dhour": {lat: 23.8911, lng: 90.3450}, "Chandura": {lat: 23.9922, lng: 90.2335},
-            "EPZ": {lat: 23.9350, lng: 90.2700}, "Konabari": {lat: 24.0040, lng: 90.3150},
-            "Technical": {lat: 23.7845, lng: 90.3524}, "Science Lab": {lat: 23.7382, lng: 90.3813},
-            "New Market": {lat: 23.7331, lng: 90.3833}, "Agargaon": {lat: 23.7766, lng: 90.3770},
-            "Banani": {lat: 23.7937, lng: 90.4066}, "Mohakhali": {lat: 23.7777, lng: 90.4005}
+            "IUBAT Campus": { lat: 23.8821, lng: 90.3980 }, "Kamarpara": { lat: 23.8906, lng: 90.3881 },
+            "Abdullahpur": { lat: 23.8784, lng: 90.3989 }, "House Building": { lat: 23.8761, lng: 90.3985 },
+            "Azampur": { lat: 23.8675, lng: 90.4008 }, "Rajlakshmi": { lat: 23.8642, lng: 90.4001 },
+            "Airport": { lat: 23.8515, lng: 90.4073 }, "Khilkhet": { lat: 23.8285, lng: 90.4215 },
+            "Kuril": { lat: 23.8188, lng: 90.4230 }, "Natun Bazar": { lat: 23.8051, lng: 90.4243 },
+            "Badda": { lat: 23.7805, lng: 90.4267 }, "ECB Chattar": { lat: 23.8189, lng: 90.3965 },
+            "Kalshi": { lat: 23.8217, lng: 90.3831 }, "Mirpur - 10": { lat: 23.8069, lng: 90.3687 },
+            "Tongi": { lat: 23.8900, lng: 90.4000 }, "Board Bazar": { lat: 23.9427, lng: 90.3804 },
+            "Chowrastha": { lat: 23.9893, lng: 90.3725 }, "Ashulia": { lat: 23.8961, lng: 90.3204 },
+            "Baipal": { lat: 23.9482, lng: 90.2764 }, "Savar": { lat: 23.8384, lng: 90.2674 },
+            "Signboard": { lat: 23.6961, lng: 90.4630 }, "Gulistan": { lat: 23.7259, lng: 90.4124 },
+            "Farmgate": { lat: 23.7561, lng: 90.3872 }, "Mothijheel": { lat: 23.7289, lng: 90.4187 },
+            "Kaliganj": { lat: 23.9424, lng: 90.5265 }, "Rajendrapur": { lat: 24.0811, lng: 90.4439 },
+            "Dhour": { lat: 23.8911, lng: 90.3450 }, "Chandura": { lat: 23.9922, lng: 90.2335 },
+            "EPZ": { lat: 23.9350, lng: 90.2700 }, "Konabari": { lat: 24.0040, lng: 90.3150 },
+            "Technical": { lat: 23.7845, lng: 90.3524 }, "Science Lab": { lat: 23.7382, lng: 90.3813 },
+            "New Market": { lat: 23.7331, lng: 90.3833 }, "Agargaon": { lat: 23.7766, lng: 90.3770 },
+            "Banani": { lat: 23.7937, lng: 90.4066 }, "Mohakhali": { lat: 23.7777, lng: 90.4005 }
         };
 
         const alarmSelect = document.getElementById("alarmSelect");
@@ -359,7 +593,7 @@
             // NEW: Populate ETA dropdown
             let optETA = document.createElement("option");
             optETA.value = station; optETA.text = station;
-            if(etaSelect) etaSelect.appendChild(optETA);
+            if (etaSelect) etaSelect.appendChild(optETA);
         }
 
         // --- 2. IUBAT 15-ROUTE MATRIX ---
@@ -386,18 +620,18 @@
         function populateTrainDropdowns() {
             const fSelect = document.getElementById("fSelect");
             const tSelect = document.getElementById("tSelect");
-            
+
             let defaultOptF = document.createElement("option"); defaultOptF.value = ""; defaultOptF.text = "-- SHOW ALL ACTIVE BUSES --";
             let defaultOptT = document.createElement("option"); defaultOptT.value = ""; defaultOptT.text = "-- SELECT YOUR BUS --";
             fSelect.appendChild(defaultOptF); tSelect.appendChild(defaultOptT);
-            
+
             for (let train in routeMatrix) {
                 let optF = document.createElement("option"); optF.value = train; optF.text = train.replace(/_/g, ' ');
                 let optT = document.createElement("option"); optT.value = train; optT.text = train.replace(/_/g, ' ');
                 fSelect.appendChild(optF); tSelect.appendChild(optT);
             }
         }
-        
+
         populateTrainDropdowns();
 
         function updateStationRoute() {
@@ -426,20 +660,21 @@
             appId: "1:828791840620:web:f45b14b8c1f295d1775d49",
             databaseURL: "https://iubat-bus-command-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
-        
+
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const db = firebase.database();
-        
-        
+
+
         let uName = "";
         let wakeLock = null;
-        let globalDbData = {}; 
+        let globalDbData = {};
         let targetAlarmStation = "";
         let isAlarmTriggered = false;
 
         function setAlarm() {
             targetAlarmStation = document.getElementById("alarmSelect").value;
-            isAlarmTriggered = false; 
+            isAlarmTriggered = false;
         }
 
         // --- DISTANCE CALCULATOR (HAVERSINE FORMULA) ---
@@ -448,8 +683,8 @@
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c;
         }
@@ -472,16 +707,16 @@
         function verifyRouteProximity(lat, lng, trainId) {
             const route = routeMatrix[trainId] || defaultStations;
             let validCoords = [];
-            
+
             route.forEach(st => {
                 if (stoppageCoords[st]) validCoords.push(stoppageCoords[st]);
             });
-            
-            if (validCoords.length < 2) return true; 
-            
+
+            if (validCoords.length < 2) return true;
+
             let minDistance = Infinity;
             for (let i = 0; i < validCoords.length - 1; i++) {
-                let p1 = validCoords[i]; let p2 = validCoords[i+1];
+                let p1 = validCoords[i]; let p2 = validCoords[i + 1];
                 let dx = p2.lng - p1.lng; let dy = p2.lat - p1.lat;
                 let len2 = dx * dx + dy * dy;
                 let t = Math.max(0, Math.min(1, ((lng - p1.lng) * dx + (lat - p1.lat) * dy) / len2));
@@ -489,46 +724,22 @@
                 let dist = getHaversine(lat, lng, projY, projX);
                 if (dist < minDistance) minDistance = dist;
             }
-            return minDistance <= 3.0; 
+            return minDistance <= 3.0;
         }
 
-        // --- NEW: ETA & SOS FUNCTIONS ---
+        // --- NEW: ETA FUNCTIONS ---
         function toggleETAOverlay(show) {
             document.getElementById('etaOverlay').style.display = show ? 'flex' : 'none';
         }
 
         function calculateETA() {
             let dest = document.getElementById("etaStation").value;
-            if(!dest) { alert("⚠️ Please select your Target Destination first."); return; }
-            let simulatedDistance = Math.floor(Math.random() * 250) + 20; 
-            let speed = 72; 
+            if (!dest) { alert("⚠️ Please select your Target Destination first."); return; }
+            let simulatedDistance = Math.floor(Math.random() * 250) + 20;
+            let speed = 72;
             let timeInMinutes = Math.round((simulatedDistance / speed) * 60);
             alert(`⏱️ TRAJECTORY CALCULATED\n\nDestination: ${dest}\nEstimated Distance: ~${simulatedDistance} km\n\nEstimated Time of Arrival: ${timeInMinutes} minutes.`);
             document.getElementById('etaDisplay').innerText = `${timeInMinutes} MINS`;
-        }
-
-        function activateRealSOS() {
-            let busDrop = document.getElementById("tSelect");
-            let bus = (busDrop && busDrop.value) ? busDrop.value.replace(/_/g, ' ') : "Unknown Bus";
-            
-            let compartment = prompt(`🚨 SOS GEO-BEACON 🚨\n\nEnter the Exact Bus Number or License Plate:`);
-            if(!compartment) return; 
-
-            if (navigator.geolocation) {
-                alert("Acquiring exact GPS coordinates. Please wait...");
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    let lat = position.coords.latitude;
-                    let lon = position.coords.longitude;
-                    let mapsLink = `https://www.google.com/maps?q=${lat},${lon}`;
-                    let emergencyMessage = `🚨 EMERGENCY! I need help. I am on IUBAT Bus: ${bus}, ID: ${compartment}. My live location is here: ${mapsLink}`;
-                    let whatsappUrl = `https://wa.me/?text=${encodeURIComponent(emergencyMessage)}`;
-                    window.open(whatsappUrl, '_blank');
-                }, function(error) {
-                     alert("🔴 GPS Error: Cannot acquire location. Please ensure location services are turned on.");
-                }, { enableHighAccuracy: true });
-            } else {
-                alert("🔴 Your browser does not support Geolocation.");
-            }
         }
 
         async function requestWakeLock() {
@@ -550,14 +761,14 @@
         });
 
         let map, markers = {};
-        
+
         // --- XSS PROTECTION HELPER ---
         function escapeHTML(str) {
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
         }
-        
+
         function applyFilter() { renderMarkers(); }
 
         function renderMarkers() {
@@ -565,20 +776,20 @@
             const now = Date.now();
             Object.keys(markers).forEach(id => map.removeLayer(markers[id]));
             markers = {};
-            
+
             Object.keys(globalDbData).forEach(id => {
                 const p = globalDbData[id];
                 if (filter && p.bus !== filter) return;
-                
+
                 const ageMs = now - p.ts;
-                
+
                 // Only show data from the last 2 hours (7,200,000 ms)
                 if (ageMs < 7200000) {
-                    
+
                     // --- TEMPORAL CALCULATION ENGINE ---
                     const ageMins = Math.floor(ageMs / 60000);
                     let statusColor, statusText;
-                    
+
                     if (ageMins < 2) {
                         statusColor = "#00ff88"; // Neon Green
                         statusText = "● Live Now";
@@ -610,15 +821,15 @@
 
             map = L.map('map', {
                 zoomControl: false,
-                maxBounds: bdBounds,         
-                maxBoundsViscosity: 1.0,     
-                minZoom: 10                   
+                maxBounds: bdBounds,
+                maxBoundsViscosity: 1.0,
+                minZoom: 10
             }).setView([23.8821, 90.3980], 12);
-            
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                 maxZoom: 19,
                 noWrap: true,
-                bounds: bdBounds 
+                bounds: bdBounds
             }).addTo(map);
 
             db.ref('active_buses').on('value', snap => {
@@ -627,14 +838,14 @@
             });
         }
 
-        let wID = null, lastLat = null, lastLng = null, lastTs = null, sLat = 0, sLng = 0; 
+        let wID = null, lastLat = null, lastLng = null, lastTs = null, sLat = 0, sLng = 0;
 
         async function toggleTelemetry() {
             const btn = document.getElementById('mBtn');
             const train = document.getElementById('tSelect').value;
-            if(!train) return alert("Select a bus designation to begin.");
+            if (!train) return alert("Select a bus designation to begin.");
 
-            if(!wID) {
+            if (!wID) {
                 await requestWakeLock();
 
                 wID = navigator.geolocation.watchPosition(pos => {
@@ -646,8 +857,8 @@
                     const isOnTrack = verifyRouteProximity(cLat, cLng, train);
                     if (!isOnTrack) {
                         alert("🚨 FALSE ALARM DETECTED: You are broadcasting from outside the designated bus route for this service. Transmission halted and marker erased.");
-                        db.ref('active_buses/' + uName).remove(); 
-                        toggleTelemetry(); 
+                        db.ref('active_buses/' + uName).remove();
+                        toggleTelemetry();
                         return;
                     }
 
@@ -658,7 +869,7 @@
                     if (lastLat && lastTs) {
                         const distKm = getHaversine(lastLat, lastLng, cLat, cLng);
                         const timeHr = (now - lastTs) / 3600000;
-                        if (timeHr > 0 && (distKm / timeHr) > 130) return; 
+                        if (timeHr > 0 && (distKm / timeHr) > 130) return;
                     }
 
                     const alpha = 0.3;
@@ -671,7 +882,7 @@
                     document.getElementById('live-kmh').innerText = speed + " KM/H";
                     document.getElementById('live-alt').innerText = cAlt;
                     document.getElementById('live-hdg').innerText = cHdg;
-                    
+
                     const payload = {
                         name: uName, bus: train, station: document.getElementById('tStation').value,
                         crowd: document.getElementById('tCrowd').value, seat: document.getElementById('tSeat').value,
@@ -681,10 +892,10 @@
                     const dateStr = new Date().toISOString().split('T')[0];
                     db.ref(`raw_telemetry/${dateStr}/broadcasts/${uName}`).set(payload);
                     db.ref('active_buses/' + uName).set(payload);
-                    
+
                     btn.innerText = "HALT BROADCAST"; btn.classList.add('active');
-                }, (err) => alert("Geospatial Lock Failed: " + err.message), 
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+                }, (err) => alert("Geospatial Lock Failed: " + err.message),
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
             } else {
                 navigator.geolocation.clearWatch(wID); wID = null;
                 if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
@@ -694,4 +905,5 @@
         }
     </script>
 </body>
+
 </html>
