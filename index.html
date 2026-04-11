@@ -491,7 +491,7 @@
 
     <!-- SCHEDULE HUB (Intelligence Hub) -->
     <div id="schedule-hub"
-        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+        style="display:none; position:fixed; inset:0; background:rgba(0,33,71,0.8); z-index:10000; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
         <div
             style="background:var(--glass-bg); padding:30px; border-radius:15px; border:1px solid rgba(255,255,255,0.1); width:90%; max-width:600px; max-height:80dvh; overflow-y:auto;">
             <h3 style="color:var(--accent-cyan); margin-top:0; text-align:center; letter-spacing:2px;">INTELLIGENCE HUB:
@@ -506,28 +506,46 @@
                     </thead>
                     <tbody id="schedule-body">
                         <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Kaliganj Fleet
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <strong>Savar (Bus 11)</strong><br>
+                                <span style="font-size:10px; color:#aaa;">Savar, Nabinagar, Ashulia, Dhour</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">07:30 AM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:20 AM / 05:40 PM</td>
                         </tr>
                         <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Rampura Fleet
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <strong>Kallyanpur (Bus 18)</strong><br>
+                                <span style="font-size:10px; color:#aaa;">Kallyanpur, Mirpur 1, 10, Kazipara, Mohakhali</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">07:45 AM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:20 AM / 05:40 PM</td>
                         </tr>
                         <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Savar Fleet</td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">08:00 AM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <strong>New Market (Bus 29)</strong><br>
+                                <span style="font-size:10px; color:#aaa;">Science Lab, New Market, Farmgate, Banani</span>
+                            </td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:40 AM / 05:40 PM</td>
                         </tr>
                         <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Signboard Fleet
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <strong>Signboard (Bus 32)</strong><br>
+                                <span style="font-size:10px; color:#aaa;">Jatrabari, Gulistan, Shahbagh, Banani</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">08:15 AM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:30 AM / 05:40 PM</td>
                         </tr>
                         <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">New Market Fleet
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <strong>Mothijheel (Bus 09)</strong><br>
+                                <span style="font-size:10px; color:#aaa;">Shapla Chattar, Malibagh, Rampura, Kuril</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">08:30 AM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:40 AM / 05:40 PM</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <strong>Gazipur (Bus 17)</strong><br>
+                                <span style="font-size:10px; color:#aaa;">Razbari, Chowrastha, Board Bazar, Station Road</span>
+                            </td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:50 AM / 05:40 PM</td>
                         </tr>
                     </tbody>
                 </table>
@@ -598,13 +616,19 @@
             <!-- Right: Logout -->
             <div style="display:flex; justify-content: flex-end; align-items: center; gap: 15px; flex: 1;">
                 <div style="text-align: right; display:flex; align-items:center; gap: 15px;">
+                    <button class="btn-gate"
+                        style="padding: 6px 12px; font-size: 10px; background:rgba(255,255,255,0.1); border:1px solid #aaa; cursor:pointer;"
+                        onclick="refreshFleet()"><span style="font-size:12px;">↻</span> REFRESH</button>
                     <div style="cursor:pointer; font-size:18px;"
                         onclick="document.getElementById('settings-modal').style.display='flex'" title="Settings">⚙️
                     </div>
                     <div>
                         <div id="user-display"
-                            style="font-size: 11px; color:#aaa; margin-bottom: 4px; font-family: 'Courier New', 'JetBrains Mono', monospace; text-transform:uppercase;">
+                            style="font-size: 11px; color:#aaa; margin-bottom: 2px; font-family: 'Courier New', 'JetBrains Mono', monospace; text-transform:uppercase;">
                             OP: <span id="uNameDisplay">--</span></div>
+                        <div style="font-size: 9px; color:var(--accent-cyan); font-weight:bold; margin-bottom: 4px; text-transform:uppercase;">
+                            PRIMARY: <span id="headerDefaultBus">NONE</span>
+                        </div>
                         <button class="btn-gate btn-broadcast" id="logoutBtn"
                             style="padding: 6px 16px; font-size: 10px;" onclick="logout()">LOGOUT</button>
                     </div>
@@ -783,12 +807,24 @@
                     const data = snap.val();
                     if (data && data.defaultBus) {
                         const tSelect = document.getElementById('tSelect');
+                        const fSelect = document.getElementById('fSelect');
+                        
                         if (tSelect) {
                             tSelect.value = data.defaultBus;
                             setTimeout(() => {
                                 if (typeof updateStationRoute === "function") updateStationRoute();
                             }, 500);
                         }
+                        if (fSelect) {
+                            fSelect.value = data.defaultBus;
+                            setTimeout(() => {
+                                if (typeof renderMarkers === "function") renderMarkers();
+                            }, 500);
+                        }
+                        
+                        const hdb = document.getElementById('headerDefaultBus');
+                        if (hdb) hdb.innerText = data.defaultBus.replace(/_/g, ' ');
+
                         // Pre-fill the settings modal dropdown:
                         const updateSelect = document.getElementById('updateDefaultBus');
                         if (updateSelect) updateSelect.value = data.defaultBus;
@@ -937,12 +973,31 @@
             db.ref('users/' + user.uid).update({ defaultBus: newBus }).then(() => {
                 alert("Primary Fleet Preference Updated.");
                 document.getElementById('settings-modal').style.display = 'none';
+
                 const tSelect = document.getElementById('tSelect');
                 if (tSelect) {
                     tSelect.value = newBus;
                     if (typeof updateStationRoute === "function") updateStationRoute();
                 }
+
+                const fSelect = document.getElementById('fSelect');
+                if (fSelect) {
+                    fSelect.value = newBus;
+                    if (typeof renderMarkers === "function") renderMarkers();
+                }
+
+                const hdb = document.getElementById('headerDefaultBus');
+                if (hdb) hdb.innerText = newBus.replace(/_/g, ' ');
+                
             }).catch(err => alert("Transmission Error: " + err.message));
+        }
+
+        function refreshFleet() {
+            db.ref('active_buses').once('value').then(snap => {
+                globalDbData = snap.val() || {};
+                if (typeof renderMarkers === "function") renderMarkers();
+                alert("Fleet Data Re-Synchronized.");
+            });
         }
 
         function populateTrainDropdowns() {
