@@ -141,12 +141,54 @@
         }
 
         /* AUTHENTICATION TABS */
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; }
-        .tab-btn { flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; color: var(--text-main); background: transparent; border: 1px solid var(--glass-border); }
-        .tab-btn.active { background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover)); border-color: transparent; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
-        .tab-btn:hover:not(.active) { border-color: var(--accent-cyan); background: rgba(56, 189, 248, 0.05); }
-        .auth-view { display: flex; flex-direction: column; animation: fadeIn 0.4s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-main);
+            background: transparent;
+            border: 1px solid var(--glass-border);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover));
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            border-color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .auth-view {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         /* 2. MAIN APPLICATION SHELL */
         #app-shell {
@@ -254,14 +296,27 @@
             flex: 1;
             min-width: 280px;
         }
-        
-        select:focus, input:focus {
+
+        select:focus,
+        input:focus {
             box-shadow: 0 0 10px var(--accent-cyan);
             border-color: var(--accent-cyan);
             outline: none;
         }
 
-        @keyframes pulseStatus { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes pulseStatus {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
 
         .grid {
             display: grid;
@@ -372,8 +427,9 @@
         <div class="gate-card">
             <img src="iubat-logo.png" alt="IUBAT Logo" style="width: 80px; height: auto; margin-bottom: 15px;">
             <h2 style="color:var(--text-main); margin-top:0; margin-bottom:5px;">IUBAT Bus Command</h2>
-            <p style="color:var(--accent-cyan); font-size:12px; margin-bottom:25px; text-transform: uppercase;">Fleet Telemetry & Radar</p>
-            
+            <p style="color:var(--accent-cyan); font-size:12px; margin-bottom:25px; text-transform: uppercase;">Fleet
+                Telemetry & Radar</p>
+
             <div class="auth-tabs">
                 <button class="tab-btn active" onclick="switchTab('student')" id="tab-student">Student</button>
                 <button class="tab-btn" onclick="switchTab('faculty')" id="tab-faculty">Faculty</button>
@@ -382,50 +438,138 @@
             <div id="view-student" class="auth-view">
                 <input type="text" id="studentId" class="gate-input" placeholder="Student ID (Max 8 Digits)">
                 <input type="password" id="studentPass" class="gate-input" placeholder="Password (Min 6 chars)">
-                
+                <select id="studentDefaultBus" class="gate-input fleet-select" style="margin-bottom: 20px;">
+                    <option value="">-- Primary Bus Fleet --</option>
+                </select>
+
                 <button class="btn-gate btn-track" onclick="authAction('student', 'login')">SECURE LOGIN</button>
-                <button class="btn-gate btn-broadcast" onclick="authAction('student', 'signup')">REGISTER ACCOUNT</button>
+                <button class="btn-gate btn-broadcast" onclick="authAction('student', 'signup')">REGISTER
+                    ACCOUNT</button>
             </div>
 
             <div id="view-faculty" class="auth-view" style="display: none;">
                 <input type="email" id="facultyEmail" class="gate-input" placeholder="Faculty Email (@iubat.edu)">
                 <input type="password" id="facultyPass" class="gate-input" placeholder="Password (Min 6 chars)">
-                
+                <select id="facultyDefaultBus" class="gate-input fleet-select" style="margin-bottom: 20px;">
+                    <option value="">-- Primary Bus Fleet --</option>
+                </select>
+
                 <button class="btn-gate btn-track" onclick="authAction('faculty', 'login')">SECURE LOGIN</button>
-                <button class="btn-gate btn-broadcast" onclick="authAction('faculty', 'signup')">REGISTER ACCOUNT</button>
+                <button class="btn-gate btn-broadcast" onclick="authAction('faculty', 'signup')">REGISTER
+                    ACCOUNT</button>
             </div>
-            
+
             <div id="view-selection" class="auth-view" style="display: none; text-align: center;">
-                <div style="color:var(--accent-cyan); font-weight:bold; margin-bottom: 10px; font-size: 14px;">IDENTITY VERIFIED // ACCESS GRANTED</div>
-                <h3 style="color:var(--text-main); margin-top:0; margin-bottom:20px; font-size: 16px; letter-spacing: 1px;">SECURITY CLEARANCE GRANTED.<br>SELECT MISSION PARAMETERS.</h3>
-                <button class="btn-gate btn-track" onclick="initApp('track')" style="margin-bottom: 10px;">ENTER RADAR (TRACKING)</button>
+                <div style="color:var(--accent-cyan); font-weight:bold; margin-bottom: 10px; font-size: 14px;">IDENTITY
+                    VERIFIED // ACCESS GRANTED</div>
+                <h3
+                    style="color:var(--text-main); margin-top:0; margin-bottom:20px; font-size: 16px; letter-spacing: 1px;">
+                    SECURITY CLEARANCE GRANTED.<br>SELECT MISSION PARAMETERS.</h3>
+                <button class="btn-gate btn-track" onclick="initApp('track')" style="margin-bottom: 10px;">ENTER RADAR
+                    (TRACKING)</button>
                 <button class="btn-gate btn-broadcast" onclick="initApp('broadcast')">I AM ON THE BUS (PROBE)</button>
             </div>
         </div>
     </div>
 
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:10000; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+        <div
+            style="background:var(--glass-bg); padding:30px; border-radius:15px; text-align:center; border:1px solid rgba(255,255,255,0.1); width:80%; max-width:350px;">
+            <h3 style="color:#fff; margin-top:0;">OPERATOR SETTINGS</h3>
+            <p style="color:#aaa; font-size:12px; margin-bottom:20px;">Update your Primary Bus Fleet designation.</p>
+            <select id="updateDefaultBus" class="gate-input fleet-select" style="margin-bottom:15px;">
+                <option value="">-- Select New Primary Fleet --</option>
+            </select>
+            <button class="btn-action" style="margin-bottom:10px; width:100%; border:none;"
+                onclick="updatePreference()">SAVE PREFERENCE</button>
+            <button class="btn-action" style="background:transparent; width:100%; border:1px solid #aaa; color:#aaa;"
+                onclick="document.getElementById('settings-modal').style.display='none'">CANCEL</button>
+        </div>
+    </div>
+
+    <!-- SCHEDULE HUB (Intelligence Hub) -->
+    <div id="schedule-hub"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+        <div
+            style="background:var(--glass-bg); padding:30px; border-radius:15px; border:1px solid rgba(255,255,255,0.1); width:90%; max-width:600px; max-height:80dvh; overflow-y:auto;">
+            <h3 style="color:var(--accent-cyan); margin-top:0; text-align:center; letter-spacing:2px;">INTELLIGENCE HUB:
+                SCHEDULES</h3>
+            <div style="margin-top:20px;">
+                <table style="width: 100%; color: #fff; font-size: 13px; text-align: left; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--accent-cyan);">
+                            <th style="padding: 10px;">Route Name</th>
+                            <th style="padding: 10px;">Departure Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body">
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Kaliganj Fleet
+                            </td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">07:30 AM</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Rampura Fleet
+                            </td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">07:45 AM</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Savar Fleet</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">08:00 AM</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Signboard Fleet
+                            </td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">08:15 AM</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">New Market Fleet
+                            </td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">08:30 AM</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn-action"
+                style="background:transparent; border:1px solid #aaa; color:#aaa; margin-top:20px; width:100%;"
+                onclick="document.getElementById('schedule-hub').style.display='none'">CLOSE INTELLIGENCE</button>
+        </div>
+    </div>
+
     <!-- TERMINATION MODAL -->
-    <div id="departure-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
-        <div style="background:var(--glass-bg); padding:30px; border-radius:15px; text-align:center; border:1px solid rgba(255,255,255,0.1); width:80%; max-width:350px;">
+    <div id="departure-modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+        <div
+            style="background:var(--glass-bg); padding:30px; border-radius:15px; text-align:center; border:1px solid rgba(255,255,255,0.1); width:80%; max-width:350px;">
             <h3 style="color:#fff; margin-top:0;">TERMINATE BROADCAST</h3>
             <p style="color:#aaa; font-size:12px; margin-bottom:20px;">Select your parting transmission protocol.</p>
-            <button class="btn-action" style="background:#F42A41; margin-bottom:10px; width:100%; border:none; box-shadow: 0 4px 15px rgba(244, 42, 65, 0.4);" onclick="stopTelemetry('permanent')">FULL DARK (DELETE)</button>
-            <button class="btn-action" style="background:transparent; width:100%; border:1px solid #c084fc; color:#c084fc;" onclick="stopTelemetry('ghost')">GHOST MODE (10 MINS)</button>
+            <button class="btn-action"
+                style="background:#F42A41; margin-bottom:10px; width:100%; border:none; box-shadow: 0 4px 15px rgba(244, 42, 65, 0.4);"
+                onclick="stopTelemetry('permanent')">FULL DARK (DELETE)</button>
+            <button class="btn-action"
+                style="background:transparent; width:100%; border:1px solid #c084fc; color:#c084fc;"
+                onclick="stopTelemetry('ghost')">GHOST MODE (10 MINS)</button>
         </div>
     </div>
 
     <div id="etaOverlay">
         <h2 style="color: #fbbf24; text-align: center; margin-top: 0; letter-spacing: 2px;">TRAJECTORY INTEL</h2>
-        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Station for ETA Calculation</p>
+        <p style="color: #888; text-align: center; font-size: 12px; margin-bottom: 30px;">Select Target Station for ETA
+            Calculation</p>
         <div class="grid">
             <select id="etaStation" style="border: 1px solid var(--accent-cyan);"></select>
         </div>
-        <div style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
-            <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival Time</div>
+        <div
+            style="background: #111; padding: 25px; text-align: center; color: #fff; border: 2px dashed #fbbf24; margin: 20px 0; border-radius: 8px;">
+            <div style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 10px;">Projected Arrival
+                Time</div>
             <span id="etaDisplay" style="color:#fbbf24; font-weight:bold; font-size: 40px;">-- MINS</span>
         </div>
         <button class="btn-action" style="background: #8e44ad;" onclick="calculateETA()">RUN CALCULATION</button>
-        <button class="btn-action" style="background: transparent; border: 1px solid #444; margin-top: 20px;" onclick="toggleETAOverlay(false)">RETURN TO RADAR</button>
+        <button class="btn-action" style="background: transparent; border: 1px solid #444; margin-top: 20px;"
+            onclick="toggleETAOverlay(false)">RETURN TO RADAR</button>
     </div>
 
     <div id="app-shell" style="flex-direction:column; height:100dvh; display:none;">
@@ -433,21 +577,37 @@
             <!-- Left: Brand -->
             <div style="display:flex; align-items: center; gap: 12px; flex: 1;">
                 <img src="iubat-logo.png" alt="IUBAT Mini Logo" style="width: 32px; height: auto;">
-                <span style="font-weight:900; font-size:16px; letter-spacing: 1.5px; color: #fff;">TRANSPORT COMMAND</span>
+                <span class="brand-text"
+                    style="font-weight:900; font-size:16px; letter-spacing: 1.5px; color: #fff;">TRANSPORT
+                    COMMAND</span>
+                <button class="btn-gate"
+                    style="margin-left: 20px; padding: 6px 12px; font-size: 10px; background:transparent; color:#fbbf24; border:1px solid #fbbf24; cursor:pointer;"
+                    onclick="document.getElementById('schedule-hub').style.display='flex'">SCHEDULES</button>
             </div>
-            
+
             <!-- Center: Mission Status -->
             <div style="flex: 1; display:flex; justify-content:center;">
-                <div style="background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); padding:8px 16px; border-radius:20px; animation: pulseStatus 2s infinite;">
-                    <span id="sys-status" style="color:var(--accent-cyan); font-weight:bold; font-size: 12px; letter-spacing: 1px;">STATUS: ACTIVE // MODE: UNKNOWN</span>
+                <div
+                    style="background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); padding:8px 16px; border-radius:20px; animation: pulseStatus 2s infinite;">
+                    <span id="sys-status"
+                        style="color:var(--accent-cyan); font-weight:bold; font-size: 12px; letter-spacing: 1px;">STATUS:
+                        ACTIVE // MODE: UNKNOWN</span>
                 </div>
             </div>
-            
+
             <!-- Right: Logout -->
             <div style="display:flex; justify-content: flex-end; align-items: center; gap: 15px; flex: 1;">
-                <div style="text-align: right;">
-                    <div id="user-display" style="font-size: 11px; color:#aaa; margin-bottom: 4px; font-family: 'Courier New', 'JetBrains Mono', monospace; text-transform:uppercase;">OP: <span id="uNameDisplay">--</span></div>
-                    <button class="btn-gate btn-broadcast" id="logoutBtn" style="padding: 6px 16px; font-size: 10px;" onclick="logout()">LOGOUT</button>
+                <div style="text-align: right; display:flex; align-items:center; gap: 15px;">
+                    <div style="cursor:pointer; font-size:18px;"
+                        onclick="document.getElementById('settings-modal').style.display='flex'" title="Settings">⚙️
+                    </div>
+                    <div>
+                        <div id="user-display"
+                            style="font-size: 11px; color:#aaa; margin-bottom: 4px; font-family: 'Courier New', 'JetBrains Mono', monospace; text-transform:uppercase;">
+                            OP: <span id="uNameDisplay">--</span></div>
+                        <button class="btn-gate btn-broadcast" id="logoutBtn"
+                            style="padding: 6px 16px; font-size: 10px;" onclick="logout()">LOGOUT</button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -457,29 +617,38 @@
         <div id="dashboard-deck">
             <!-- Card A: RADAR -->
             <div class="deck-card" id="radar-filter-container">
-                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">RADAR CONTROL</div>
+                <div
+                    style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">
+                    RADAR CONTROL</div>
                 <div class="grid">
                     <select id="fSelect" onchange="applyFilter()"></select>
                 </div>
                 <div class="grid" style="margin-top:auto;">
-                    <select id="alarmSelect" onchange="setAlarm()" style="font-size:11px; padding:12px; background:transparent; border:1px solid var(--glass-border); color:#fbbf24; cursor:pointer; font-weight:bold; width:100%;">
+                    <select id="alarmSelect" onchange="setAlarm()"
+                        style="font-size:11px; padding:12px; background:transparent; border:1px solid var(--glass-border); color:#fbbf24; cursor:pointer; font-weight:bold; width:100%;">
                         <option value="">🔔 SET DESTINATION ALARM --</option>
                     </select>
                 </div>
                 <div class="grid">
-                    <button class="btn-nav" style="width: 100%; padding:12px; border-radius:8px; background:#fbbf24; color:#78350f; font-weight:900; font-size:11px; cursor:pointer;" onclick="toggleETAOverlay(true)">⏱️ TRAJECTORY INTEL</button>
+                    <button class="btn-nav"
+                        style="width: 100%; padding:12px; border-radius:8px; background:#fbbf24; color:#78350f; font-weight:900; font-size:11px; cursor:pointer;"
+                        onclick="toggleETAOverlay(true)">⏱️ TRAJECTORY INTEL</button>
                 </div>
             </div>
 
             <!-- Card B: PROBE SETUP -->
             <div class="deck-card" id="probe-controls" style="display:none;">
-                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">PROBE COMMAND</div>
+                <div
+                    style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">
+                    PROBE COMMAND</div>
                 <div class="grid">
-                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 2px;">01. FLEET TARGET</label>
+                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 2px;">01. FLEET
+                        TARGET</label>
                     <select id="tSelect" onchange="updateStationRoute()"></select>
                 </div>
                 <div class="grid">
-                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 2px;">02. STATION LOCK</label>
+                    <label style="font-size: 10px; font-weight: 800; color: #fff; margin-bottom: 2px;">02. STATION
+                        LOCK</label>
                     <select id="tStation" onchange="checkMissionReady()" disabled>
                         <option value="Unknown">-- Awaiting Bus Selection --</option>
                     </select>
@@ -501,16 +670,24 @@
                     </select>
                 </div>
                 <div class="grid" style="margin-top:auto;">
-                    <button id="mBtn" class="btn-action" onclick="toggleTelemetry()" disabled style="opacity: 0.5; padding: 12px; cursor: not-allowed; width: 100%;">INITIATE BROADCAST (PROBE)</button>
+                    <button id="mBtn" class="btn-action" onclick="toggleTelemetry()" disabled
+                        style="opacity: 0.5; padding: 12px; cursor: not-allowed; width: 100%;">INITIATE BROADCAST
+                        (PROBE)</button>
                 </div>
             </div>
 
             <!-- Card C: TELEMETRY -->
             <div class="deck-card" id="telemetry-block" style="display:none;">
-                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">TELEMETRY FEED</div>
-                <div style="background:rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center; flex: 1; display:flex; flex-direction:column; justify-content:center;">
-                    <div id="live-kmh" style="font-weight:900; color:var(--text-main); font-size: 32px; line-height: 1.2; font-family: 'JetBrains Mono', 'Courier New', monospace;">0 KM/H</div>
-                    <div style="font-size: 11px; color: var(--accent-cyan); margin-top: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">
+                <div
+                    style="font-size:11px; color:var(--accent-cyan); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">
+                    TELEMETRY FEED</div>
+                <div
+                    style="background:rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center; flex: 1; display:flex; flex-direction:column; justify-content:center;">
+                    <div id="live-kmh"
+                        style="font-weight:900; color:var(--text-main); font-size: 32px; line-height: 1.2; font-family: 'JetBrains Mono', 'Courier New', monospace;">
+                        0 KM/H</div>
+                    <div
+                        style="font-size: 11px; color: var(--accent-cyan); margin-top: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">
                         LAT: <span id="live-cLat">0.000</span> | LNG: <span id="live-cLng">0.000</span><br><br>
                         ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°
                     </div>
@@ -526,14 +703,14 @@
 
     <script>
         let uName = ""; // Secure Global State
-        
+
         // --- AUTHENTICATION ENGINE ---
         function switchTab(role) {
             let sTab = document.getElementById('tab-student');
             let fTab = document.getElementById('tab-faculty');
             if (sTab) sTab.classList.toggle('active', role === 'student');
             if (fTab) fTab.classList.toggle('active', role === 'faculty');
-            
+
             let vStu = document.getElementById('view-student');
             let vFac = document.getElementById('view-faculty');
             if (vStu) vStu.style.display = (role === 'student') ? 'flex' : 'none';
@@ -567,6 +744,11 @@
                     .then((userCredential) => {
                         alert("Account Registration Successful. Initiating connection.");
                         uName = finalUName;
+                        let defaultBus = (role === 'student') ? document.getElementById('studentDefaultBus').value : document.getElementById('facultyDefaultBus').value;
+                        if (defaultBus && userCredential.user.uid) {
+                            db.ref('users/' + userCredential.user.uid).set({ defaultBus: defaultBus });
+                        }
+
                         document.getElementById('view-student').style.display = 'none';
                         document.getElementById('view-faculty').style.display = 'none';
                         document.querySelector('.auth-tabs').style.display = 'none';
@@ -590,12 +772,29 @@
         auth.onAuthStateChanged((user) => {
             if (user) {
                 // Operative identified from previous session
-                const idOrEmail = user.email.includes('@student.iubat.edu') 
-                    ? user.email.split('@')[0] 
+                const idOrEmail = user.email.includes('@student.iubat.edu')
+                    ? user.email.split('@')[0]
                     : user.email;
-                
+
                 uName = idOrEmail; // Restore global state
-                
+
+                // Fetch user preferences
+                db.ref('users/' + user.uid).once('value').then(snap => {
+                    const data = snap.val();
+                    if (data && data.defaultBus) {
+                        const tSelect = document.getElementById('tSelect');
+                        if (tSelect) {
+                            tSelect.value = data.defaultBus;
+                            setTimeout(() => {
+                                if (typeof updateStationRoute === "function") updateStationRoute();
+                            }, 500);
+                        }
+                        // Pre-fill the settings modal dropdown:
+                        const updateSelect = document.getElementById('updateDefaultBus');
+                        if (updateSelect) updateSelect.value = data.defaultBus;
+                    }
+                }).catch(e => console.log("No config found."));
+
                 // Update UI to bypass login and show Selection Briefing
                 document.getElementById('app-shell').style.display = 'none';
                 document.getElementById('gate-screen').style.display = 'flex';
@@ -603,7 +802,7 @@
                 document.getElementById('view-faculty').style.display = 'none';
                 document.querySelector('.auth-tabs').style.display = 'none';
                 document.getElementById('view-selection').style.display = 'flex';
-                
+
                 console.log("Persistence: Operative " + uName + " re-engaged.");
             } else {
                 // No active operative, ensure we are at the login gate
@@ -611,13 +810,13 @@
                 document.getElementById('app-shell').style.display = 'none';
                 document.getElementById('gate-screen').style.display = 'flex';
                 document.getElementById('view-selection').style.display = 'none';
-                if(document.querySelector('.auth-tabs')) document.querySelector('.auth-tabs').style.display = 'flex';
-                
-                if(document.getElementById('studentId')) document.getElementById('studentId').value = "";
-                if(document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
-                if(document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
-                if(document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
-                
+                if (document.querySelector('.auth-tabs')) document.querySelector('.auth-tabs').style.display = 'flex';
+
+                if (document.getElementById('studentId')) document.getElementById('studentId').value = "";
+                if (document.getElementById('studentPass')) document.getElementById('studentPass').value = "";
+                if (document.getElementById('facultyEmail')) document.getElementById('facultyEmail').value = "";
+                if (document.getElementById('facultyPass')) document.getElementById('facultyPass').value = "";
+
                 switchTab('student'); // Default view
             }
         });
@@ -633,7 +832,7 @@
             const radarFilterContainer = document.getElementById('radar-filter-container');
             const status = document.getElementById('sys-status');
             const uDisplay = document.getElementById('uNameDisplay');
-            
+
             if (uDisplay) uDisplay.innerText = uName;
 
             if (deck) deck.style.display = 'flex';
@@ -729,18 +928,42 @@
 
         const defaultStations = ["IUBAT Campus", "Airport", "Khilkhet", "Badda", "Farmgate", "Mohakhali", "Banani", "Technical", "Kalshi", "Ashulia"];
 
+        function updatePreference() {
+            let newBus = document.getElementById('updateDefaultBus').value;
+            let user = auth.currentUser;
+            if (!user) return alert("Error: Operative identity not verified.");
+            if (!newBus) return alert("Select a valid fleet designation.");
+
+            db.ref('users/' + user.uid).update({ defaultBus: newBus }).then(() => {
+                alert("Primary Fleet Preference Updated.");
+                document.getElementById('settings-modal').style.display = 'none';
+                const tSelect = document.getElementById('tSelect');
+                if (tSelect) {
+                    tSelect.value = newBus;
+                    if (typeof updateStationRoute === "function") updateStationRoute();
+                }
+            }).catch(err => alert("Transmission Error: " + err.message));
+        }
+
         function populateTrainDropdowns() {
             const fSelect = document.getElementById("fSelect");
             const tSelect = document.getElementById("tSelect");
+            const sDefault = document.getElementById("studentDefaultBus");
+            const fDefault = document.getElementById("facultyDefaultBus");
+            const updDefault = document.getElementById("updateDefaultBus");
 
             let defaultOptF = document.createElement("option"); defaultOptF.value = ""; defaultOptF.text = "-- SHOW ALL ACTIVE BUSES --";
             let defaultOptT = document.createElement("option"); defaultOptT.value = ""; defaultOptT.text = "-- SELECT YOUR BUS --";
-            fSelect.appendChild(defaultOptF); tSelect.appendChild(defaultOptT);
+            if (fSelect) fSelect.appendChild(defaultOptF);
+            if (tSelect) tSelect.appendChild(defaultOptT);
 
             for (let train in routeMatrix) {
-                let optF = document.createElement("option"); optF.value = train; optF.text = train.replace(/_/g, ' ');
-                let optT = document.createElement("option"); optT.value = train; optT.text = train.replace(/_/g, ' ');
-                fSelect.appendChild(optF); tSelect.appendChild(optT);
+                let text = train.replace(/_/g, ' ');
+                if (fSelect) fSelect.appendChild(new Option(text, train));
+                if (tSelect) tSelect.appendChild(new Option(text, train));
+                if (sDefault) sDefault.appendChild(new Option(text, train));
+                if (fDefault) fDefault.appendChild(new Option(text, train));
+                if (updDefault) updDefault.appendChild(new Option(text, train));
             }
         }
 
@@ -749,18 +972,18 @@
         function updateStationRoute() {
             const trainSelect = document.getElementById("tSelect").value;
             const stationSelect = document.getElementById("tStation");
-            
+
             stationSelect.innerHTML = '<option value="">-- Select Current Stoppage --</option>';
-            
-            if (trainSelect === "") { 
-                stationSelect.disabled = true; 
+
+            if (trainSelect === "") {
+                stationSelect.disabled = true;
                 checkMissionReady();
-                return; 
+                return;
             }
-            
+
             stationSelect.disabled = false;
             let routeArray = routeMatrix[trainSelect] || defaultStations;
-            
+
             routeArray.forEach(station => {
                 let option = document.createElement("option");
                 option.value = station; option.text = station;
@@ -773,7 +996,7 @@
             const trainSelect = document.getElementById("tSelect").value;
             const stationSelect = document.getElementById("tStation").value;
             const mBtn = document.getElementById("mBtn");
-            
+
             if (trainSelect !== "" && stationSelect !== "" && stationSelect !== "Unknown") {
                 mBtn.disabled = false;
                 mBtn.style.opacity = '1';
@@ -946,7 +1169,7 @@
                         statusColor = "#F42A41"; // Alert Red
                         statusText = `● Offline (${ageMins}m ago)`;
                     }
-                    
+
                     if (p.status === 'Inactive') {
                         statusColor = "#c084fc"; // Purple ghost hue
                         statusText = `LAST ACTIVE: ${ageMins}m ago`;
@@ -954,7 +1177,7 @@
                     // -----------------------------------
 
                     let opac = (p.status === 'Inactive') ? 0.5 : 1.0;
-                    markers[id] = L.marker([p.lat, p.lng], {opacity: opac}).addTo(map).bindPopup(`
+                    markers[id] = L.marker([p.lat, p.lng], { opacity: opac }).addTo(map).bindPopup(`
                         <div style="text-align:center;">
                             <b style="color:var(--brand-primary); font-size:14px;">${escapeHTML(p.bus.replace(/_/g, ' '))}</b><br>
                             <span style="font-size:11px;">Node: ${escapeHTML(p.name)}</span><br>
@@ -1031,11 +1254,11 @@
                     lastLat = cLat; lastLng = cLng; lastTs = now;
 
                     let speed = Math.round((pos.coords.speed || 0) * 3.6);
-                    if(document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = speed + " KM/H";
-                    if(document.getElementById('live-alt')) document.getElementById('live-alt').innerText = cAlt;
-                    if(document.getElementById('live-hdg')) document.getElementById('live-hdg').innerText = cHdg;
-                    if(document.getElementById('live-cLat')) document.getElementById('live-cLat').innerText = cLat.toFixed(4);
-                    if(document.getElementById('live-cLng')) document.getElementById('live-cLng').innerText = cLng.toFixed(4);
+                    if (document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = speed + " KM/H";
+                    if (document.getElementById('live-alt')) document.getElementById('live-alt').innerText = cAlt;
+                    if (document.getElementById('live-hdg')) document.getElementById('live-hdg').innerText = cHdg;
+                    if (document.getElementById('live-cLat')) document.getElementById('live-cLat').innerText = cLat.toFixed(4);
+                    if (document.getElementById('live-cLng')) document.getElementById('live-cLng').innerText = cLng.toFixed(4);
 
                     const payload = {
                         name: uName, bus: train, station: document.getElementById('tStation').value,
@@ -1060,7 +1283,7 @@
             document.getElementById('departure-modal').style.display = 'none';
             if (wID) { navigator.geolocation.clearWatch(wID); wID = null; }
             if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
-            
+
             const btn = document.getElementById('mBtn');
             if (btn) { btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active'); }
             document.getElementById('sys-status').innerText = "STATUS: ACTIVE // MODE: PROBE (STANDBY)";
@@ -1073,7 +1296,7 @@
                     lastActive: Date.now()
                 });
             }
-            
+
             if (pendingLogout) {
                 pendingLogout = false;
                 auth.signOut().catch(err => alert(err.message));
