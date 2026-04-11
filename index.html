@@ -484,8 +484,16 @@
             </select>
             <button class="btn-action" style="margin-bottom:10px; width:100%; border:none;"
                 onclick="updatePreference()">SAVE PREFERENCE</button>
-            <button class="btn-action" style="background:transparent; width:100%; border:1px solid #aaa; color:#aaa;"
+            <button class="btn-action" style="background:transparent; width:100%; border:1px solid #aaa; color:#aaa; margin-bottom: 20px;"
                 onclick="document.getElementById('settings-modal').style.display='none'">CANCEL</button>
+            
+            <div style="border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 20px;">
+                <p style="color:var(--accent-cyan); font-size:10px; font-weight:bold; letter-spacing:1px; margin-bottom:10px; text-transform:uppercase;">System Diagnostics</p>
+                <button class="btn-action" style="background:transparent; width:100%; border:1px solid #c084fc; color:#c084fc; margin-bottom:10px; padding: 12px; font-size: 11px;"
+                    onclick="runStressTest()">RUN GHOST SWARM (STRESS TEST)</button>
+                <button class="btn-action" style="background:transparent; width:100%; border:1px solid #F42A41; color:#F42A41; padding: 12px; font-size: 11px;"
+                    onclick="clearSwarm()">CLEAR SWARM</button>
+            </div>
         </div>
     </div>
 
@@ -1000,6 +1008,46 @@
             });
         }
 
+        function runStressTest() {
+            let centerLat = 23.8821;
+            let centerLng = 90.3980;
+            const routeKeys = Object.keys(routeMatrix);
+            
+            let updates = {};
+            for(let i=1; i<=50; i++) {
+                let randomLat = centerLat + (Math.random() - 0.5) * 0.08;
+                let randomLng = centerLng + (Math.random() - 0.5) * 0.08;
+                let randomSpeed = Math.floor(Math.random() * 60) + 10;
+                let randomBearing = Math.floor(Math.random() * 360);
+                let randomRoute = routeKeys[Math.floor(Math.random() * routeKeys.length)];
+                
+                updates['ghost_bus_' + i] = {
+                    name: 'Test_Bot_' + i,
+                    bus: randomRoute,
+                    station: 'Telemetry Test Node',
+                    lat: randomLat,
+                    lng: randomLng,
+                    speed: randomSpeed,
+                    alt: 25,
+                    ts: Date.now(),
+                    status: 'Active'
+                };
+            }
+            db.ref('active_buses').update(updates).then(() => {
+                alert("STRESS TEST: Ghost Swarm of 50 units deployed successfully.");
+            });
+        }
+
+        function clearSwarm() {
+            let updates = {};
+            for(let i=1; i<=50; i++) {
+                updates['ghost_bus_' + i] = null;
+            }
+            db.ref('active_buses').update(updates).then(() => {
+                alert("Ghost Swarm eradicated from the active grid.");
+            });
+        }
+
         function populateTrainDropdowns() {
             const fSelect = document.getElementById("fSelect");
             const tSelect = document.getElementById("tSelect");
@@ -1251,6 +1299,7 @@
 
             map = L.map('map', {
                 zoomControl: false,
+                preferCanvas: true,
                 maxBounds: bdBounds,
                 maxBoundsViscosity: 1.0,
                 minZoom: 10
