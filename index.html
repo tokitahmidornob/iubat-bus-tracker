@@ -433,9 +433,11 @@
         <div id="map"></div>
 
         <div class="panel" id="mainPanel">
-            <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Live Radar Filter</div>
-            <div class="grid">
-                <select id="fSelect" onchange="applyFilter()"></select>
+            <div id="radar-filter-container">
+                <div style="font-size:11px; color:var(--accent-cyan); margin-bottom:8px; text-transform:uppercase; font-weight:bold;">Live Radar Filter</div>
+                <div class="grid">
+                    <select id="fSelect" onchange="applyFilter()"></select>
+                </div>
             </div>
 
             <div id="probe-controls">
@@ -445,7 +447,7 @@
                     <select id="tSelect" onchange="updateStationRoute()"></select>
                 </div>
                 <div class="grid">
-                    <select id="tStation" disabled>
+                    <select id="tStation" onchange="checkMissionReady()" disabled>
                         <option value="Unknown">-- Awaiting Bus Selection --</option>
                     </select>
                 </div>
@@ -466,7 +468,7 @@
                     </select>
                 </div>
                 <div class="grid">
-                    <button id="mBtn" class="btn-action" onclick="toggleTelemetry()">INITIATE BROADCAST (PROBE)</button>
+                    <button id="mBtn" class="btn-action" onclick="toggleTelemetry()" disabled style="opacity: 0.5; cursor: not-allowed;">INITIATE BROADCAST (PROBE)</button>
                 </div>
             </div>
         </div>
@@ -547,15 +549,18 @@
 
             const mainPanel = document.getElementById('mainPanel');
             const probeControls = document.getElementById('probe-controls');
+            const radarFilterContainer = document.getElementById('radar-filter-container');
             const status = document.getElementById('sys-status');
 
             if (mainPanel) mainPanel.style.display = 'block';
 
             if (mode === 'broadcast') {
                 if (probeControls) probeControls.style.display = 'block';
+                if (radarFilterContainer) radarFilterContainer.style.display = 'none';
                 if (status) status.innerText = "Mode: Probe (Broadcasting)";
             } else {
                 if (probeControls) probeControls.style.display = 'none';
+                if (radarFilterContainer) radarFilterContainer.style.display = 'block';
                 if (status) status.innerText = "Mode: Detector (Tracking)";
             }
 
@@ -646,15 +651,40 @@
         function updateStationRoute() {
             const trainSelect = document.getElementById("tSelect").value;
             const stationSelect = document.getElementById("tStation");
-            stationSelect.innerHTML = '<option value="Unknown">-- Awaiting Bus Selection --</option>';
-            if (trainSelect === "") { stationSelect.disabled = true; return; }
+            
+            stationSelect.innerHTML = '<option value="">-- Select Current Stoppage --</option>';
+            
+            if (trainSelect === "") { 
+                stationSelect.disabled = true; 
+                checkMissionReady();
+                return; 
+            }
+            
             stationSelect.disabled = false;
             let routeArray = routeMatrix[trainSelect] || defaultStations;
+            
             routeArray.forEach(station => {
                 let option = document.createElement("option");
                 option.value = station; option.text = station;
                 stationSelect.appendChild(option);
             });
+            checkMissionReady();
+        }
+
+        function checkMissionReady() {
+            const trainSelect = document.getElementById("tSelect").value;
+            const stationSelect = document.getElementById("tStation").value;
+            const mBtn = document.getElementById("mBtn");
+            
+            if (trainSelect !== "" && stationSelect !== "" && stationSelect !== "Unknown") {
+                mBtn.disabled = false;
+                mBtn.style.opacity = '1';
+                mBtn.style.cursor = 'pointer';
+            } else {
+                mBtn.disabled = true;
+                mBtn.style.opacity = '0.5';
+                mBtn.style.cursor = 'not-allowed';
+            }
         }
 
         // ==============================================
