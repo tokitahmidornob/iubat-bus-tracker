@@ -1214,6 +1214,7 @@
                         document.getElementById('view-selection').style.display = 'flex';
                     })
                     .catch((error) => { reEnableButtons(); alert("Authentication Failed :: " + error.message); });
+                }).catch((error) => { reEnableButtons(); alert("Persistence Error: " + error.message); });
             }
         }
 
