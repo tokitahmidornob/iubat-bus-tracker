@@ -8,19 +8,27 @@
     <title>IUBAT Transport</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-            <style>
+    <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
-            --bg-main: #f0f4f8; /* Soft, clean institutional gray/blue background */
-            --bg-panel: #ffffff; /* Crisp white cards */
-            --text-main: #334155; /* Highly readable dark slate for text */
+            --bg-main: #f0f4f8;
+            /* Soft, clean institutional gray/blue background */
+            --bg-panel: #ffffff;
+            /* Crisp white cards */
+            --text-main: #334155;
+            /* Highly readable dark slate for text */
             --text-muted: #64748b;
-            --iubat-navy: #002147; /* Official IUBAT primary color */
-            --accent-blue: #0284c7; /* Lighter academic blue for actions */
-            --accent-gold: #fbbf24; /* Official IUBAT secondary/warning */
-            --border-clean: #e2e8f0; /* Subtle structural borders */
-            --font-main: 'Inter', 'Segoe UI', system-ui, sans-serif; /* Standard, highly readable UI font */
+            --iubat-navy: #002147;
+            /* Official IUBAT primary color */
+            --accent-blue: #0284c7;
+            /* Lighter academic blue for actions */
+            --accent-gold: #fbbf24;
+            /* Official IUBAT secondary/warning */
+            --border-clean: #e2e8f0;
+            /* Subtle structural borders */
+            --font-main: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            /* Standard, highly readable UI font */
             --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 
             --brand-primary: var(--iubat-navy);
@@ -36,9 +44,12 @@
             --font-tech: var(--font-main);
         }
 
-        body, html {
-            margin: 0; padding: 0;
-            height: 100dvh; min-height: -webkit-fill-available;
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100dvh;
+            min-height: -webkit-fill-available;
             font-family: var(--font-main);
             background: var(--bg-main);
             color: var(--text-main);
@@ -46,34 +57,59 @@
         }
 
         #gate-screen {
-            position: fixed; inset: 0; z-index: 9999;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
             /* Clean Academic Overlay over the background photo */
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(240, 244, 248, 0.95) 100%), url('iubat-bg.jpg');
-            background-size: cover; 
+            background-size: cover;
             background-position: center;
-            display: flex; align-items: center; justify-content: center; padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
         .gate-card {
-            background: var(--bg-panel); padding: 30px 40px; border-radius: 12px;
-            width: 100%; max-width: 420px;
+            background: var(--bg-panel);
+            padding: 30px 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 420px;
             border: 1px solid var(--border-clean);
             box-shadow: var(--shadow-soft);
             text-align: center;
         }
 
-        .gate-input-wrapper { text-align: left; margin-bottom: 20px; }
-        .gate-label {
-            display: block; font-size: 12px; text-transform: uppercase; color: var(--text-muted);
-            letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600;
+        .gate-input-wrapper {
+            text-align: left;
+            margin-bottom: 20px;
         }
+
+        .gate-label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
         .gate-input {
-            width: 100%; padding: 12px 16px; margin-bottom: 5px;
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 5px;
             background: #f8fafc;
             border: 1px solid var(--border-clean);
-            color: var(--text-main); border-radius: 6px;
-            font-size: 15px; font-family: var(--font-main); outline: none; transition: all 0.2s ease;
+            color: var(--text-main);
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: var(--font-main);
+            outline: none;
+            transition: all 0.2s ease;
         }
+
         .gate-input:focus {
             border-color: var(--accent-blue);
             box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
@@ -81,118 +117,305 @@
         }
 
         .btn-gate {
-            width: 100%; padding: 16px; font-weight: 600; border: none; border-radius: 6px;
-            cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
-            transition: all 0.2s ease; font-size: 14px; font-family: var(--font-main);
+            width: 100%;
+            padding: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-family: var(--font-main);
         }
-        .btn-gate:hover { background: #f8fafc; color: var(--text-main); }
-        .btn-gate:active { transform: scale(0.99); }
+
+        .btn-gate:hover {
+            background: #f8fafc;
+            color: var(--text-main);
+        }
+
+        .btn-gate:active {
+            transform: scale(0.99);
+        }
 
         .btn-track {
             background: var(--iubat-navy);
-            color: white; box-shadow: var(--shadow-soft);
+            color: white;
+            box-shadow: var(--shadow-soft);
         }
-        .btn-track:hover { background: #001530; color: white;}
+
+        .btn-track:hover {
+            background: #001530;
+            color: white;
+        }
 
         .btn-broadcast {
-            background: transparent; color: var(--iubat-navy); border: 1px solid var(--iubat-navy);
+            background: transparent;
+            color: var(--iubat-navy);
+            border: 1px solid var(--iubat-navy);
         }
-        .btn-broadcast:hover { background: #f8fafc; color: var(--iubat-navy); }
 
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+        .btn-broadcast:hover {
+            background: #f8fafc;
+            color: var(--iubat-navy);
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
         .tab-btn {
-            flex: 1; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 600;
-            text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;
-            color: var(--text-muted); background: transparent; border: 1px solid var(--border-clean);
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border-clean);
             font-family: var(--font-main);
         }
+
         .tab-btn.active {
             background: var(--iubat-navy);
-            border-color: transparent; color: white; box-shadow: var(--shadow-soft);
+            border-color: transparent;
+            color: white;
+            box-shadow: var(--shadow-soft);
         }
-        .tab-btn:hover:not(.active) { border-color: var(--border-clean); background: #f8fafc; color: var(--text-main); }
 
-        .auth-view { display: flex; flex-direction: column; animation: fadeIn 0.3s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-btn:hover:not(.active) {
+            border-color: var(--border-clean);
+            background: #f8fafc;
+            color: var(--text-main);
+        }
 
-        #app-shell { display: none; flex-direction: column; height: 100dvh; min-height: -webkit-fill-available; }
+        .auth-view {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #app-shell {
+            display: none;
+            flex-direction: column;
+            height: 100dvh;
+            min-height: -webkit-fill-available;
+        }
+
         .header {
-            padding: 16px 24px; background: var(--bg-panel); border-bottom: 1px solid var(--border-clean);
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+            padding: 16px 24px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-clean);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
         }
 
         .alarm-bar {
-            background: #ffffff; padding: 12px 24px;
-            border-bottom: 1px solid var(--border-clean); display: flex; align-items: center; z-index: 1000; gap: 15px;
+            background: #ffffff;
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border-clean);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            gap: 15px;
         }
+
         .alarm-bar select {
-            background: transparent; border: none; color: var(--iubat-navy); font-weight: 600; font-size: 14px;
-            width: 100%; outline: none; cursor: pointer; border-radius: 6px; padding: 4px;
+            background: transparent;
+            border: none;
+            color: var(--iubat-navy);
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+            cursor: pointer;
+            border-radius: 6px;
+            padding: 4px;
             font-family: var(--font-main);
         }
 
         .btn-nav {
-            background: white; color: var(--text-main); border: 1px solid var(--border-clean);
-            padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
-            white-space: nowrap; margin-left: auto; transition: all 0.2s ease; box-shadow: var(--shadow-soft);
+            background: white;
+            color: var(--text-main);
+            border: 1px solid var(--border-clean);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            margin-left: auto;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-soft);
             font-family: var(--font-main);
         }
-        .btn-nav:hover { background: #f8fafc; }
 
-        #map { flex-grow: 1; width: 100%; z-index: 1; background: var(--bg-main); }
+        .btn-nav:hover {
+            background: #f8fafc;
+        }
+
+        #map {
+            flex-grow: 1;
+            width: 100%;
+            z-index: 1;
+            background: var(--bg-main);
+        }
 
         #etaOverlay {
-            display: none; position: fixed; inset: 0; z-index: 2000;
-            background: rgba(255, 255, 255, 0.95); padding: 30px; flex-direction: column; justify-content: center;
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            flex-direction: column;
+            justify-content: center;
         }
 
         #dashboard-deck {
-            display: none; flex-direction: row; flex-wrap: wrap; gap: 15px; padding: 15px 24px 30px; z-index: 1000;
+            display: none;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 15px 24px 30px;
+            z-index: 1000;
         }
+
         .deck-card {
-            background: var(--bg-panel); padding: 20px; border-radius: 8px;
+            background: var(--bg-panel);
+            padding: 20px;
+            border-radius: 8px;
             border: 1px solid var(--border-clean);
-            box-shadow: var(--shadow-soft); flex: 1; min-width: 280px; transition: all 0.2s ease;
+            box-shadow: var(--shadow-soft);
+            flex: 1;
+            min-width: 280px;
+            transition: all 0.2s ease;
         }
 
-        select, input, .gate-input {
-            background: #f8fafc; border: 1px solid var(--border-clean);
-            color: var(--text-main); padding: 12px 16px; border-radius: 6px; width: 100%; font-size: 14px;
-            box-sizing: border-box; appearance: none; cursor: pointer; transition: all 0.2s;
-            font-family: var(--font-main); font-weight: 500;
+        select,
+        input,
+        .gate-input {
+            background: #f8fafc;
+            border: 1px solid var(--border-clean);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 14px;
+            box-sizing: border-box;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-main);
+            font-weight: 500;
         }
-        select:focus, input:focus, .gate-input:focus { box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); border-color: var(--accent-blue); outline: none; background: #ffffff; }
-        select:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        select:focus,
+        input:focus,
+        .gate-input:focus {
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+            border-color: var(--accent-blue);
+            outline: none;
+            background: #ffffff;
+        }
+
+        select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
 
         .btn-action {
-            width: 100%; padding: 16px;
-            background: transparent; color: var(--iubat-navy); font-weight: 600; border: 1px solid var(--iubat-navy);
-            border-radius: 6px; cursor: pointer; margin-top: 8px;
-            flex-shrink: 0; transition: all 0.2s ease; font-family: var(--font-main);
-            text-transform: uppercase; letter-spacing: 1px;
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            color: var(--iubat-navy);
+            font-weight: 600;
+            border: 1px solid var(--iubat-navy);
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            font-family: var(--font-main);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .btn-action:hover { background: rgba(0, 33, 71, 0.05); }
-        .btn-action:active { transform: scale(0.99); }
+
+        .btn-action:hover {
+            background: rgba(0, 33, 71, 0.05);
+        }
+
+        .btn-action:active {
+            transform: scale(0.99);
+        }
 
         .btn-action.active {
-            background: var(--accent-gold); border: 1px solid var(--accent-gold); color: #78350f;
+            background: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            color: #78350f;
             box-shadow: var(--shadow-soft);
         }
-        
+
         .btn-action.active:hover {
-            background: #f59e0b; border-color: #f59e0b;
+            background: #f59e0b;
+            border-color: #f59e0b;
         }
 
         .leaflet-popup-content-wrapper {
-            background: var(--bg-panel) !important; border: 1px solid var(--border-clean);
-            color: var(--text-main) !important; border-radius: 8px !important;
-            box-shadow: var(--shadow-soft) !important; font-family: var(--font-main);
+            background: var(--bg-panel) !important;
+            border: 1px solid var(--border-clean);
+            color: var(--text-main) !important;
+            border-radius: 8px !important;
+            box-shadow: var(--shadow-soft) !important;
+            font-family: var(--font-main);
         }
-        .leaflet-popup-tip { background: var(--bg-panel) !important; border: 1px solid var(--border-clean); border-top: none; border-left: none; }
-        .leaflet-container a.leaflet-popup-close-button { color: var(--iubat-navy) !important; font-weight: bold; }
+
+        .leaflet-popup-tip {
+            background: var(--bg-panel) !important;
+            border: 1px solid var(--border-clean);
+            border-top: none;
+            border-left: none;
+        }
+
+        .leaflet-container a.leaflet-popup-close-button {
+            color: var(--iubat-navy) !important;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -211,8 +434,10 @@
             </div>
 
             <div id="view-student" class="auth-view">
-                <div class="gate-input-wrapper"><label class="gate-label">Student ID</label><input type="text" id="studentId" class="gate-input" placeholder="Max 8 Digits"></div>
-                <div class="gate-input-wrapper"><label class="gate-label">Passcode</label><input type="password" id="studentPass" class="gate-input" placeholder="Airlock pin"></div>
+                <div class="gate-input-wrapper"><label class="gate-label">Student ID</label><input type="text"
+                        id="studentId" class="gate-input" placeholder="Max 8 Digits"></div>
+                <div class="gate-input-wrapper"><label class="gate-label">Passcode</label><input type="password"
+                        id="studentPass" class="gate-input" placeholder="Airlock pin"></div>
                 <select id="studentDefaultBus" class="gate-input fleet-select" style="margin-bottom: 20px;">
                     <option value="">-- Primary Bus Fleet --</option>
                 </select>
@@ -223,8 +448,10 @@
             </div>
 
             <div id="view-faculty" class="auth-view" style="display: none;">
-                <div class="gate-input-wrapper"><label class="gate-label">Faculty Credentials</label><input type="email" id="facultyEmail" class="gate-input" placeholder="@iubat.edu domain"></div>
-                <div class="gate-input-wrapper"><label class="gate-label">Passcode</label><input type="password" id="facultyPass" class="gate-input" placeholder="Airlock pin"></div>
+                <div class="gate-input-wrapper"><label class="gate-label">Faculty Credentials</label><input type="email"
+                        id="facultyEmail" class="gate-input" placeholder="@iubat.edu domain"></div>
+                <div class="gate-input-wrapper"><label class="gate-label">Passcode</label><input type="password"
+                        id="facultyPass" class="gate-input" placeholder="Airlock pin"></div>
                 <select id="facultyDefaultBus" class="gate-input fleet-select" style="margin-bottom: 20px;">
                     <option value="">-- Primary Bus Fleet --</option>
                 </select>
@@ -259,14 +486,19 @@
             </select>
             <button class="btn-action" style="margin-bottom:10px; width:100%; border:none;"
                 onclick="updatePreference()">SAVE PREFERENCE</button>
-            <button class="btn-action" style="background:transparent; width:100%; border:1px solid #aaa; color:#aaa; margin-bottom: 20px;"
+            <button class="btn-action"
+                style="background:transparent; width:100%; border:1px solid #aaa; color:#aaa; margin-bottom: 20px;"
                 onclick="document.getElementById('settings-modal').style.display='none'">CANCEL</button>
-            
+
             <div style="border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 20px;">
-                <p style="color:var(--accent-cyan); font-size:10px; font-weight:bold; letter-spacing:1px; margin-bottom:10px; text-transform:uppercase;">System Diagnostics</p>
-                <button class="btn-action" style="background:transparent; width:100%; border:1px solid #c084fc; color:#c084fc; margin-bottom:10px; padding: 12px; font-size: 11px;"
+                <p
+                    style="color:var(--accent-cyan); font-size:10px; font-weight:bold; letter-spacing:1px; margin-bottom:10px; text-transform:uppercase;">
+                    System Diagnostics</p>
+                <button class="btn-action"
+                    style="background:transparent; width:100%; border:1px solid #c084fc; color:#c084fc; margin-bottom:10px; padding: 12px; font-size: 11px;"
                     onclick="runStressTest()">RUN GHOST SWARM (STRESS TEST)</button>
-                <button class="btn-action" style="background:transparent; width:100%; border:1px solid #F42A41; color:#F42A41; padding: 12px; font-size: 11px;"
+                <button class="btn-action"
+                    style="background:transparent; width:100%; border:1px solid #F42A41; color:#F42A41; padding: 12px; font-size: 11px;"
                     onclick="clearSwarm()">CLEAR SWARM</button>
             </div>
         </div>
@@ -280,7 +512,8 @@
             <h3 style="color:var(--accent-cyan); margin-top:0; text-align:center; letter-spacing:2px;">INTELLIGENCE HUB:
                 SCHEDULES</h3>
             <div style="margin-top:20px;">
-                <table style="width: 100%; color: var(--iubat-navy); font-size: 13px; text-align: left; border-collapse: collapse;">
+                <table
+                    style="width: 100%; color: var(--iubat-navy); font-size: 13px; text-align: left; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid var(--accent-cyan);">
                             <th style="padding: 10px;">Route Name</th>
@@ -293,42 +526,52 @@
                                 <strong>Savar (Bus 11)</strong><br>
                                 <span style="font-size:10px; color:#aaa;">Savar, Nabinagar, Ashulia, Dhour</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:20 AM / 05:40 PM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:20 AM / 05:40
+                                PM</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                                 <strong>Kallyanpur (Bus 18)</strong><br>
-                                <span style="font-size:10px; color:#aaa;">Kallyanpur, Mirpur 1, 10, Kazipara, Mohakhali</span>
+                                <span style="font-size:10px; color:#aaa;">Kallyanpur, Mirpur 1, 10, Kazipara,
+                                    Mohakhali</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:20 AM / 05:40 PM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:20 AM / 05:40
+                                PM</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                                 <strong>New Market (Bus 29)</strong><br>
-                                <span style="font-size:10px; color:#aaa;">Science Lab, New Market, Farmgate, Banani</span>
+                                <span style="font-size:10px; color:#aaa;">Science Lab, New Market, Farmgate,
+                                    Banani</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:40 AM / 05:40 PM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:40 AM / 05:40
+                                PM</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                                 <strong>Signboard (Bus 32)</strong><br>
                                 <span style="font-size:10px; color:#aaa;">Jatrabari, Gulistan, Shahbagh, Banani</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:30 AM / 05:40 PM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:30 AM / 05:40
+                                PM</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                                 <strong>Mothijheel (Bus 09)</strong><br>
-                                <span style="font-size:10px; color:#aaa;">Shapla Chattar, Malibagh, Rampura, Kuril</span>
+                                <span style="font-size:10px; color:#aaa;">Shapla Chattar, Malibagh, Rampura,
+                                    Kuril</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:40 AM / 05:40 PM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:40 AM / 05:40
+                                PM</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                                 <strong>Gazipur (Bus 17)</strong><br>
-                                <span style="font-size:10px; color:#aaa;">Razbari, Chowrastha, Board Bazar, Station Road</span>
+                                <span style="font-size:10px; color:#aaa;">Razbari, Chowrastha, Board Bazar, Station
+                                    Road</span>
                             </td>
-                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:50 AM / 05:40 PM</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">06:50 AM / 05:40
+                                PM</td>
                         </tr>
                     </tbody>
                 </table>
@@ -382,8 +625,16 @@
                     style="font-weight:900; font-size:16px; letter-spacing: 1.5px; color: var(--iubat-navy);">TRANSPORT
                     COMMAND</span>
                 <button class="btn-gate"
-                    style="margin-left: 20px; padding: 6px 12px; font-size: 10px; background:white; color:var(--text-main); border:1px solid var(--border-clean); border-radius: 6px; transition: all 0.2s ease;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'"
-                    onclick="document.getElementById('schedule-hub').style.display='flex'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> SCHEDULES</button>
+                    style="margin-left: 20px; padding: 6px 12px; font-size: 10px; background:white; color:var(--text-main); border:1px solid var(--border-clean); border-radius: 6px; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'"
+                    onclick="document.getElementById('schedule-hub').style.display='flex'"><svg width="12" height="12"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg> SCHEDULES</button>
             </div>
 
             <!-- Center: Mission Status -->
@@ -399,20 +650,34 @@
             <div style="display:flex; justify-content: flex-end; align-items: center; gap: 15px; flex: 1;">
                 <div style="text-align: right; display:flex; align-items:center; gap: 15px;">
                     <button class="btn-gate"
-                        style="padding: 6px 12px; font-size: 10px; background:white; color:var(--text-main); border:1px solid var(--border-clean); border-radius: 6px; cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'"
-                        onclick="refreshFleet()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg> REFRESH</button>
+                        style="padding: 6px 12px; font-size: 10px; background:white; color:var(--text-main); border:1px solid var(--border-clean); border-radius: 6px; cursor:pointer;"
+                        onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'"
+                        onclick="refreshFleet()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            style="margin-right:2px; vertical-align:middle;">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg> REFRESH</button>
                     <div style="cursor:pointer; font-size:18px;"
-                        onclick="document.getElementById('settings-modal').style.display='flex'" title="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        onclick="document.getElementById('settings-modal').style.display='flex'" title="Settings"><svg
+                            width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
                     </div>
                     <div>
                         <div id="user-display"
                             style="font-size: 12px; color:var(--text-muted); margin-bottom: 2px; font-family: var(--font-main); text-transform:uppercase; font-weight: 600;">
                             OP: <span id="uNameDisplay">--</span></div>
-                        <div style="font-size: 10px; color:var(--iubat-navy); font-weight:bold; margin-bottom: 4px; text-transform:uppercase;">
+                        <div
+                            style="font-size: 10px; color:var(--iubat-navy); font-weight:bold; margin-bottom: 4px; text-transform:uppercase;">
                             PRIMARY: <span id="headerDefaultBus">NONE</span>
                         </div>
-                        <button class="btn-gate" id="logoutBtn"
-                            style="padding: 6px 16px; font-size: 10px;" onclick="logout()">LOGOUT</button>
+                        <button class="btn-gate" id="logoutBtn" style="padding: 6px 16px; font-size: 10px;"
+                            onclick="logout()">LOGOUT</button>
                     </div>
                 </div>
             </div>
@@ -448,12 +713,14 @@
                     style="font-size:13px; color:var(--iubat-navy); margin-bottom:12px; text-transform:uppercase; font-weight:bold; letter-spacing: 1px;">
                     PROBE COMMAND</div>
                 <div class="grid">
-                    <label style="font-size: 10px; font-weight: 800; color: var(--iubat-navy); margin-bottom: 2px;">01. FLEET
+                    <label style="font-size: 10px; font-weight: 800; color: var(--iubat-navy); margin-bottom: 2px;">01.
+                        FLEET
                         TARGET</label>
                     <select id="tSelect" onchange="updateStationRoute()"></select>
                 </div>
                 <div class="grid">
-                    <label style="font-size: 10px; font-weight: 800; color: var(--iubat-navy); margin-bottom: 2px;">02. STATION
+                    <label style="font-size: 10px; font-weight: 800; color: var(--iubat-navy); margin-bottom: 2px;">02.
+                        STATION
                         LOCK</label>
                     <select id="tStation" onchange="checkMissionReady()" disabled>
                         <option value="Unknown">-- Awaiting Bus Selection --</option>
@@ -493,7 +760,7 @@
                         style="font-weight:900; color:var(--text-main); font-size: 32px; line-height: 1.2; font-family: 'JetBrains Mono', 'Courier New', monospace;">
                         0 KM/H</div>
                     <div
-                        style="font-size: 11px; color: var(--text-muted); margin-top: 10px; font-family: var(--font-main);" >
+                        style="font-size: 11px; color: var(--text-muted); margin-top: 10px; font-family: var(--font-main);">
                         LAT: <span id="live-cLat">0.000</span> | LNG: <span id="live-cLng">0.000</span><br><br>
                         ALT: <span id="live-alt">0</span>m | HDG: <span id="live-hdg">0</span>°
                     </div>
@@ -711,7 +978,7 @@
 
                 const hdb = document.getElementById('headerDefaultBus');
                 if (hdb) hdb.innerText = newBus.replace(/_/g, ' ');
-                
+
             }).catch(err => alert("Transmission Error: " + err.message));
         }
 
@@ -727,15 +994,15 @@
             let centerLat = 23.8821;
             let centerLng = 90.3980;
             const routeKeys = Object.keys(routeMatrix);
-            
+
             let updates = {};
-            for(let i=1; i<=50; i++) {
+            for (let i = 1; i <= 50; i++) {
                 let randomLat = centerLat + (Math.random() - 0.5) * 0.08;
                 let randomLng = centerLng + (Math.random() - 0.5) * 0.08;
                 let randomSpeed = Math.floor(Math.random() * 60) + 10;
                 let randomBearing = Math.floor(Math.random() * 360);
                 let randomRoute = routeKeys[Math.floor(Math.random() * routeKeys.length)];
-                
+
                 updates['ghost_bus_' + i] = {
                     name: 'Test_Bot_' + i,
                     bus: randomRoute,
@@ -755,7 +1022,7 @@
 
         function clearSwarm() {
             let updates = {};
-            for(let i=1; i<=50; i++) {
+            for (let i = 1; i <= 50; i++) {
                 updates['ghost_bus_' + i] = null;
             }
             db.ref('active_buses').update(updates).then(() => {
@@ -863,7 +1130,7 @@
                         if (data && data.defaultBus) {
                             const tSelect = document.getElementById('tSelect');
                             const fSelect = document.getElementById('fSelect');
-                            
+
                             if (tSelect) {
                                 tSelect.value = data.defaultBus;
                                 setTimeout(() => {
@@ -876,7 +1143,7 @@
                                     if (typeof renderMarkers === "function") renderMarkers();
                                 }, 500);
                             }
-                            
+
                             const hdb = document.getElementById('headerDefaultBus');
                             if (hdb) hdb.innerText = data.defaultBus.replace(/_/g, ' ');
 
