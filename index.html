@@ -1397,22 +1397,22 @@
             }
         }
 
-        // --- 2. IUBAT 14-ROUTE FLEET (UNIFIED FORMAT) ---
+        // --- 2. IUBAT 14-ROUTE FLEET (UNIFIED FORMAT WITH COMPREHENSIVE STATIONS) ---
         const routeMatrix = {
-            "Bus 01 Kaliganj": ["Kaliganj", "Pubail", "Mirer Bazar", "Station Road", "IUBAT Campus"],
-            "Bus 19 Shimultali": ["Shimultali", "Salna Road", "Joydebpur", "Shibbari", "Chowrastha", "Board Bazar", "IUBAT Campus"],
-            "Bus 22 Razbari": ["Razbari", "Kendrio Mosque", "Rice Research", "Chowrastha", "Board Bazar", "Gazipura", "IUBAT Campus"],
-            "Bus 29 Rajendrapur": ["Rajendrapur", "Masterbari", "Purabari", "Salna Bridge", "Nagpara", "IUBAT Campus"],
-            "Bus 31 Kalshi": ["11.05", "Sangbadik Plot", "Kalshi Mour", "ECB Chattar", "Shewra", "Khilkhet", "Airport", "Azampur", "IUBAT Campus"],
-            "Bus 32 Chandura": ["Chandura", "Kabirpur", "EPZ", "Baipal", "Unique", "Norsinghpur", "Zirabo", "Ashulia", "IUBAT Campus"],
-            "Bus 33 Konabari": ["Mouchak", "Konabari", "Palli Biddut", "Chowrastha", "Board Bazar", "Station Road", "IUBAT Campus"],
-            "Bus 34 Soni Hall": ["Soni Hall", "Mirpur - 02", "Mirpur - 10", "Mirpur - 11", "Kalshi", "ECB Chattar", "Airport", "IUBAT Campus"],
-            "Bus 37 Signboard": ["Signboard", "Shonir Akra", "Hanif Flyover", "Gulistan", "Shahbagh", "Farmgate", "Banani", "Airport", "IUBAT Campus"],
-            "Bus 38 Mothijheel": ["Mothijheel", "Rajarbagh", "Mouchak", "Rampura", "Badda", "Nuton Bazar", "Kuril", "Airport", "IUBAT Campus"],
-            "Bus 39 Kallyanpur": ["Kallyanpur", "Technical", "Mirpur - 01", "Soni Hall", "Mirpur - 10", "Kazipara", "Agargaon", "Mohakhali", "IUBAT Campus"],
-            "Bus 40 Physical": ["Physical", "Noorjahan Road", "Shia Masjid", "Shymoli", "Mohakhali", "Kakoli", "House Building", "IUBAT Campus"],
-            "Bus 41 Savar": ["Savar", "CRP Gate", "Nabinagar", "Palash Bari", "Unique", "Jamghara", "Zirabo", "Ashulia", "IUBAT Campus"],
-            "Bus 42 New Market": ["Science Lab", "New Market", "City College", "Zigatala", "Farmgate", "Banani", "IUBAT Campus"]
+            "Bus 01 Kaliganj": ["Kaliganj", "Mohila College", "Pubail College", "Mirer Bazar Chowrastha", "Maju Khan Bazar", "T & T Gate", "K 2 Factory", "West Side of Flyover", "Station Road", "IUBAT Campus"],
+            "Bus 19 Shimultali": ["Shimultali", "Salna Road", "Salim Vila", "BADC", "Duet Gate", "Joydebpur Bus Stand", "Shibbari", "Krishi Gabeshana", "Rice Research", "T & T", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "IUBAT Campus"],
+            "Bus 22 Razbari": ["Razbari", "Kendrio Jame Mosque", "Krishi Gabeshana", "Rice Research", "T & T", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "IUBAT Campus"],
+            "Bus 29 Rajendrapur": ["Rajendrapur Cantonment", "Rajendrapur Chowrastha", "Masterbari", "Purabari", "University Gate", "Salna Bridge", "Nagpara", "Telipara", "Truck Stand", "IUBAT Campus"],
+            "Bus 31 Kalshi": ["11.05 (Shara Egaro)", "Dha Block Mour", "Sangbadik Plot", "Byesh Tala", "Kalshi Mour", "Kalshi Bridge", "ECB Chattar", "Mati Kata Baribadh", "Shewra", "Khilkhet", "Kawla", "Airport", "Jashimuddin", "Azampur", "Abdullahpur", "IUBAT Campus"],
+            "Bus 32 Chandura": ["Chandura", "Baripara", "Kabirpur", "Zerane Bazar", "EPZ", "Baypal", "Unique", "Zamgora Bazar", "Sarker Market", "Norsinghpur", "Zirabo", "Ashulia", "Dhour", "IUBAT Campus"],
+            "Bus 33 Konabari": ["Mouchak", "Konabari", "Palli Biddhut", "Bhawal College", "Chowrastha", "Board Bazar", "Barabari", "Gazipura", "College Gate", "Station Road", "IUBAT Campus"],
+            "Bus 34 Soni Hall": ["Soni Hall", "Mirpur - 02", "Original - 10", "Mirpur - 11", "Purobi Hall", "Palashi", "Kabarsthan", "Kalshi", "ECB Chattar", "MES", "Khilkhet", "Airport", "IUBAT Campus"],
+            "Bus 37 Signboard": ["Signboard", "Matuaile Medical", "Shonir Akra", "Mayor Hanif Flyover", "Jatrabari", "Gulistan", "National Stadium", "Shahbagh", "Banglamotor", "Sonargown Hotel", "Farmgate Pollice Box", "Shahin Hall", "Banani", "MES", "Kowla", "Airport", "IUBAT Campus"],
+            "Bus 38 Mothijheel": ["Mothijheel Shapla Chattar", "Rajarbagh", "Malibagh Mour", "Mouchak", "Malibagh Rail Gate", "Chowdhury Para", "Hazipara", "Rampura Bazar", "Rampura TV Gate", "Maddhya Badda", "Uttar Badda", "Shahjadpur", "Nuton Bazar", "Narda Bazar", "Bashundhara", "Kuril Biswa Road", "Biswa Road", "Khilkhet", "Airport", "IUBAT Campus"],
+            "Bus 39 Kallyanpur": ["Kallyanpur", "Technical", "Ansar Camp", "Mirpur - 01", "Soni Hall", "Mirpur - 02", "Mirpur - 10", "Kazipara", "Shewrapara", "Taltala", "Agargaon", "Shaheen College", "Mohakhali Rail Gate", "Amtali", "Soinik Club", "Kakali", "Shewra", "Khilkhet", "IUBAT Campus"],
+            "Bus 40 Physical": ["Physical", "Noorjahan Road", "Shia Masjid", "Japan Garden City", "Shymoli", "Shaheen School", "Mohakhali Flyover", "Kakoli, Banani", "MES", "House Building", "Abdullahpur", "IUBAT Campus"],
+            "Bus 41 Savar": ["Savar", "CRP Gate", "Radio Colony", "J Nagar Dairy Gate", "Bismail", "RAB Gate", "Nabinagar", "Cantonment Board", "Palli Biddut", "Palash Bari", "Baipail Bridge", "Unique", "Jamghara Bazar", "Sarkar Market", "Nasinghapur", "Nischintapur", "Goshbagh", "Zirabo", "Ashulia", "Dhour", "IUBAT Campus"],
+            "Bus 42 New Market": ["Gonoshasthya", "Science Lab", "New Market", "City College", "Zigatala", "Dhanmondi 15", "Shankar Bus Stand", "Farmgate", "Kakoli/Banani", "MES", "Khilkhet", "Airport", "IUBAT Campus"]
         };
 
         const defaultStations = ["IUBAT Campus", "Airport", "Khilkhet", "Badda", "Farmgate", "Mohakhali", "Banani", "Technical", "Kalshi", "Ashulia"];
