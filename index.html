@@ -1004,8 +1004,8 @@
                             <polyline points="23 4 23 10 17 10"></polyline>
                             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                         </svg> REFRESH</button>
-                    <div style="cursor:pointer; font-size:18px;"
-                        onclick="document.getElementById('settings-modal').style.display='flex'" title="Settings"><svg
+                    <button style="cursor:pointer; font-size:18px; background:none; border:none; padding:0; display:flex; align-items:center;"
+                        onclick="document.getElementById('settings-modal').style.display='flex'" title="Settings" aria-label="Open Settings"><svg
                             width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="3"></circle>
@@ -1013,7 +1013,7 @@
                                 d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
                             </path>
                         </svg>
-                    </div>
+                    </button>
                     <div>
                         <div id="user-display"
                             style="font-size: 12px; color:var(--text-muted); margin-bottom: 2px; font-family: var(--font-main); text-transform:uppercase; font-weight: 600;">
@@ -1742,7 +1742,7 @@
                             <b style="color:var(--brand-primary); font-size:14px;">${escapeHTML(p.bus.replace(/_/g, ' '))}</b><br>
                             <span style="font-size:11px;">Node: ${escapeHTML(p.name)}</span><br>
                             <span style="font-size:11px;">Stoppage: ${escapeHTML(p.station)}</span><br>
-                            <b>${p.speed} KM/H</b> | ${p.alt}m<br>
+                            <b>${escapeHTML(String(p.speed))} KM/H</b> | ${escapeHTML(String(p.alt))}m<br>
                             <span style="color:${statusColor}; font-weight:bold; font-size:11px;">${statusText}</span>
                         </div>
                     `);
