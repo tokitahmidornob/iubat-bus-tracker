@@ -422,10 +422,254 @@
             color: var(--iubat-navy) !important;
             font-weight: bold;
         }
+
+        /* --- LANDING PAGE --- */
+        #landing-page {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(240,244,248,0.95) 100%), url('iubat-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .landing-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 32px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-clean);
+        }
+
+        .landing-nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--iubat-navy);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .landing-nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-landing-outline {
+            padding: 10px 24px;
+            border: 1px solid var(--iubat-navy);
+            background: transparent;
+            color: var(--iubat-navy);
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-landing-outline:hover {
+            background: var(--iubat-navy);
+            color: white;
+        }
+
+        .btn-landing-solid {
+            padding: 10px 24px;
+            border: none;
+            background: var(--iubat-navy);
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-landing-solid:hover {
+            background: var(--brand-hover);
+        }
+
+        .landing-hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 24px 40px;
+        }
+
+        .landing-hero-badge {
+            display: inline-block;
+            background: rgba(0,33,71,0.08);
+            color: var(--iubat-navy);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            margin-bottom: 24px;
+        }
+
+        .landing-hero h1 {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 800;
+            color: var(--iubat-navy);
+            margin: 0 0 16px;
+            line-height: 1.15;
+            max-width: 700px;
+        }
+
+        .landing-hero p {
+            font-size: clamp(14px, 2vw, 17px);
+            color: var(--text-muted);
+            max-width: 540px;
+            margin: 0 0 36px;
+            line-height: 1.7;
+        }
+
+        .landing-hero .btn-hero {
+            padding: 16px 40px;
+            background: var(--iubat-navy);
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(0,33,71,0.25);
+        }
+
+        .landing-hero .btn-hero:hover {
+            background: var(--brand-hover);
+            box-shadow: 0 6px 20px rgba(0,33,71,0.35);
+            transform: translateY(-1px);
+        }
+
+        .landing-features {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 32px 60px;
+            flex-wrap: wrap;
+        }
+
+        .landing-feature-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-clean);
+            border-radius: 10px;
+            padding: 28px 24px;
+            max-width: 260px;
+            flex: 1;
+            min-width: 220px;
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+        }
+
+        .landing-feature-card .feature-icon {
+            font-size: 28px;
+            margin-bottom: 14px;
+        }
+
+        .landing-feature-card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--iubat-navy);
+            margin: 0 0 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .landing-feature-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .gate-back-link {
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .gate-back-link:hover {
+            color: var(--iubat-navy);
+        }
+
+        @media (max-width: 600px) {
+            .landing-nav {
+                padding: 14px 16px;
+            }
+            .landing-nav-brand span {
+                display: none;
+            }
+            .landing-features {
+                padding: 0 16px 40px;
+            }
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- PUBLIC LANDING PAGE -->
+    <div id="landing-page">
+        <nav class="landing-nav">
+            <div class="landing-nav-brand">
+                <img src="iubat-logo.png" alt="IUBAT Logo" style="width: 30px; height: auto;">
+                <span>IUBAT Transport</span>
+            </div>
+            <div class="landing-nav-actions">
+                <button class="btn-landing-outline" onclick="navigateToGate('login')">LOGIN</button>
+                <button class="btn-landing-solid" onclick="navigateToGate('register')">REGISTER</button>
+            </div>
+        </nav>
+        <div class="landing-hero">
+            <div class="landing-hero-badge">Live Fleet Intelligence</div>
+            <h1>IUBAT Fleet Telemetry & Transit Intelligence</h1>
+            <p>Real-time GPS tracking, crowd-level reporting, and route intelligence for the entire IUBAT bus fleet. Know exactly where your bus is — before you step outside.</p>
+            <button class="btn-hero" onclick="navigateToGate('login')">Access Command Center</button>
+        </div>
+        <div class="landing-features">
+            <div class="landing-feature-card">
+                <div class="feature-icon">📡</div>
+                <h3>Live Radar</h3>
+                <p>Track every active bus in real-time on an interactive map with speed and bearing data.</p>
+            </div>
+            <div class="landing-feature-card">
+                <div class="feature-icon">🚌</div>
+                <h3>Broadcast Mode</h3>
+                <p>Riders on the bus share live GPS, crowd levels, and seat availability for fellow students.</p>
+            </div>
+            <div class="landing-feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3>Smart Alerts</h3>
+                <p>Set a destination alarm and get notified when your bus is within 2 km of your stop.</p>
+            </div>
+        </div>
+    </div>
 
     <div id="gate-screen">
         <div class="gate-card">
@@ -477,6 +721,8 @@
                     (TRACKING)</button>
                 <button class="btn-gate btn-broadcast" onclick="initApp('broadcast')">I AM ON THE BUS (PROBE)</button>
             </div>
+
+            <a class="gate-back-link" onclick="showLandingPage()">← Back to Home</a>
         </div>
     </div>
 
@@ -782,6 +1028,26 @@
 
     <script>
         let uName = ""; // Secure Global State
+
+        // --- LANDING PAGE NAVIGATION ---
+        function navigateToGate(intent) {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('gate-screen').style.display = 'flex';
+
+            // Show auth forms, hide selection view
+            document.getElementById('view-selection').style.display = 'none';
+            const authTabs = document.querySelector('.auth-tabs');
+            if (authTabs) authTabs.style.display = 'flex';
+
+            // Default to student tab
+            switchTab('student');
+        }
+
+        function showLandingPage() {
+            document.getElementById('gate-screen').style.display = 'none';
+            document.getElementById('app-shell').style.display = 'none';
+            document.getElementById('landing-page').style.display = 'flex';
+        }
 
         // --- AUTHENTICATION ENGINE ---
         function switchTab(role) {
@@ -1169,10 +1435,11 @@
 
                     // Session restored successfully
                 } else {
-                    // No active operative, ensure we are at the login gate
+                    // No active operative — show public landing page
                     uName = "";
                     document.getElementById('app-shell').style.display = 'none';
-                    document.getElementById('gate-screen').style.display = 'flex';
+                    document.getElementById('gate-screen').style.display = 'none';
+                    document.getElementById('landing-page').style.display = 'flex';
                     document.getElementById('view-selection').style.display = 'none';
                     if (document.querySelector('.auth-tabs')) document.querySelector('.auth-tabs').style.display = 'flex';
 
