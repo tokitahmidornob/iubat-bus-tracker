@@ -1084,9 +1084,15 @@
 
             if (pass.length < 6) return alert("Security Error: Password must be at least 6 characters.");
 
+            // P3: Double-click guard — disable all auth buttons during processing
+            const allAuthBtns = document.querySelectorAll('.btn-gate');
+            allAuthBtns.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
+            const reEnableButtons = () => allAuthBtns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+
             if (action === 'signup') {
                 auth.createUserWithEmailAndPassword(authEmail, pass)
                     .then((userCredential) => {
+                        reEnableButtons();
                         alert("Account Registration Successful. Initiating connection.");
                         uName = finalUName;
                         let defaultBus = (role === 'student') ? document.getElementById('studentDefaultBus').value : document.getElementById('facultyDefaultBus').value;
@@ -1099,17 +1105,18 @@
                         document.querySelector('.auth-tabs').style.display = 'none';
                         document.getElementById('view-selection').style.display = 'flex';
                     })
-                    .catch((error) => alert("Registration Denied :: " + error.message));
+                    .catch((error) => { reEnableButtons(); alert("Registration Denied :: " + error.message); });
             } else if (action === 'login') {
                 auth.signInWithEmailAndPassword(authEmail, pass)
                     .then((userCredential) => {
+                        reEnableButtons();
                         uName = finalUName;
                         document.getElementById('view-student').style.display = 'none';
                         document.getElementById('view-faculty').style.display = 'none';
                         document.querySelector('.auth-tabs').style.display = 'none';
                         document.getElementById('view-selection').style.display = 'flex';
                     })
-                    .catch((error) => alert("Authentication Failed :: " + error.message));
+                    .catch((error) => { reEnableButtons(); alert("Authentication Failed :: " + error.message); });
             }
         }
 
@@ -1299,6 +1306,8 @@
             }
             db.ref('active_buses').update(updates).then(() => {
                 alert("Ghost Swarm eradicated from the active grid.");
+            }).catch(err => {
+                alert("Swarm cleanup failed: " + err.message);
             });
         }
 
@@ -1353,6 +1362,7 @@
             const trainSelect = document.getElementById("tSelect").value;
             const stationSelect = document.getElementById("tStation").value;
             const mBtn = document.getElementById("mBtn");
+            if (!mBtn) return; // P3: Null guard
 
             if (trainSelect !== "" && stationSelect !== "" && stationSelect !== "Unknown") {
                 mBtn.disabled = false;
@@ -1585,13 +1595,16 @@
                 if (myMarker && id === uName) return; // Skip self — handled by local marker
                 if (filter && p.bus !== filter) return;
 
+                // P3: Data integrity check — skip malformed entries
+                if (!p || typeof p.lat !== 'number' || typeof p.lng !== 'number' || !p.bus || !p.ts) return;
+
                 const ageMs = now - p.ts;
 
                 // Ghost mode purge check
                 if (p.status === 'Inactive' && p.lastActive) {
                     if (now - p.lastActive > 600000) {
                         // Older than 10 mins in ghost mode
-                        db.ref('active_buses/' + id).remove();
+                        try { db.ref('active_buses/' + id).remove(); } catch(e) {}
                         return;
                     }
                 }
@@ -1659,6 +1672,9 @@
                 globalDbData = snap.val() || {};
                 renderMarkers();
             });
+
+            // P3: Force Leaflet to recalculate container size in case layout wasn't settled
+            setTimeout(() => { if (map) map.invalidateSize(); }, 200);
         }
 
         let wID = null, lastLat = null, lastLng = null, lastTs = null, sLat = 0, sLng = 0;
@@ -1670,6 +1686,8 @@
             if (!train) return alert("Select a bus designation to begin.");
 
             if (!wID) {
+                // P3: Double-click guard for broadcast button
+                btn.disabled = true; btn.style.opacity = '0.6'; btn.innerText = 'ACQUIRING GPS...';
                 await requestWakeLock();
 
                 wID = navigator.geolocation.watchPosition(pos => {
