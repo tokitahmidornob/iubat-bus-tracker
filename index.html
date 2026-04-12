@@ -752,6 +752,7 @@
                 <button class="btn-action"
                     style="background:transparent; width:100%; border:1px solid #F42A41; color:#F42A41; padding: 12px; font-size: 11px;"
                     onclick="clearSwarm()">CLEAR SWARM</button>
+                <button class="btn-gate" style="margin-top: 15px; border-color: var(--accent-gold); color: var(--accent-gold); background: transparent;" onclick="startSimulation()">RUN HARDWARE SIMULATION</button>
             </div>
         </div>
     </div>
@@ -1677,7 +1678,7 @@
             setTimeout(() => { if (map) map.invalidateSize(); }, 200);
         }
 
-        let wID = null, lastLat = null, lastLng = null, lastTs = null, sLat = 0, sLng = 0;
+        let wID = null, simID = null, lastLat = null, lastLng = null, lastTs = null, sLat = 0, sLng = 0;
         let myMarker = null, hasInitialCenter = false;
 
         async function toggleTelemetry() {
@@ -1711,8 +1712,8 @@
                         return;
                     }
 
-                    const cAlt = Math.round(pos.coords.altitude || 0);
-                    const cHdg = Math.round(pos.coords.heading || 0);
+                    const cAlt = pos.coords.altitude !== null ? Math.round(pos.coords.altitude) : 'N/A';
+                    const cHdg = pos.coords.heading !== null ? Math.round(pos.coords.heading) : 'N/A';
                     checkGeofence(cLat, cLng);
 
                     if (lastLat && lastTs) {
@@ -1727,8 +1728,8 @@
                     sLng = (cLng * alpha) + (sLng * (1 - alpha));
                     lastLat = cLat; lastLng = cLng; lastTs = now;
 
-                    let speed = Math.round((pos.coords.speed || 0) * 3.6);
-                    if (document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = speed + " KM/H";
+                    let speed = pos.coords.speed !== null ? Math.round(pos.coords.speed * 3.6) : 'N/A';
+                    if (document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = speed !== 'N/A' ? speed + " KM/H" : "N/A";
                     if (document.getElementById('live-alt')) document.getElementById('live-alt').innerText = cAlt;
                     if (document.getElementById('live-hdg')) document.getElementById('live-hdg').innerText = cHdg;
                     if (document.getElementById('live-cLat')) document.getElementById('live-cLat').innerText = cLat.toFixed(4);
@@ -1766,7 +1767,14 @@
                     db.ref('active_buses/' + uName).set(payload);
 
                     btn.innerText = "HALT BROADCAST"; btn.classList.add('active');
-                }, (err) => alert("Geospatial Lock Failed: " + err.message),
+                }, (err) => {
+                    let errMsg = "Unknown Error";
+                    if (err.code === 1) errMsg = "PERMISSION_DENIED";
+                    else if (err.code === 2) errMsg = "POSITION_UNAVAILABLE";
+                    else if (err.code === 3) errMsg = "TIMEOUT";
+                    alert(`Geospatial Lock Failed: [${errMsg}] ${err.message}`);
+                    stopTelemetry('permanent');
+                },
                     { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
             } else {
                 document.getElementById('departure-modal').style.display = 'flex';
@@ -1776,6 +1784,7 @@
         async function stopTelemetry(mode) {
             document.getElementById('departure-modal').style.display = 'none';
             if (wID) { navigator.geolocation.clearWatch(wID); wID = null; }
+            if (simID) { clearInterval(simID); simID = null; }
 
             // P2-6: Wrap wakeLock.release() in try/catch for already-released locks
             if (wakeLock !== null) {
@@ -1808,6 +1817,92 @@
                 pendingLogout = false;
                 auth.signOut().catch(err => alert(err.message));
             }
+        }
+
+        function startSimulation() {
+            const btn = document.getElementById('mBtn');
+            const train = document.getElementById('tSelect').value;
+            if (!train) return alert("Select a bus designation to begin simulation.");
+
+            if (wID) { navigator.geolocation.clearWatch(wID); wID = null; }
+            if (simID) { clearInterval(simID); simID = null; }
+            
+            document.getElementById('settings-modal').style.display = 'none';
+            btn.disabled = false; btn.style.opacity = '1'; 
+            btn.innerText = "HALT SIMULATION"; btn.classList.add('active');
+            document.getElementById('sys-status').innerText = "STATUS: ACTIVE // MODE: SIMULATOR";
+
+            let simLat = 23.8877;
+            let simLng = 90.3898;
+            sLat = 0; sLng = 0; lastLat = null; lastLng = null; lastTs = null;
+
+            simID = setInterval(() => {
+                simLat += 0.0001; 
+                simLng += 0.0001;
+                
+                const pos = {
+                    coords: {
+                        latitude: simLat,
+                        longitude: simLng,
+                        speed: 12.5, 
+                        heading: 45,
+                        altitude: 12
+                    }
+                };
+                
+                const cLat = pos.coords.latitude;
+                const cLng = pos.coords.longitude;
+                const loopNow = Date.now();
+
+                const cAlt = pos.coords.altitude !== null ? Math.round(pos.coords.altitude) : 'N/A';
+                const cHdg = pos.coords.heading !== null ? Math.round(pos.coords.heading) : 'N/A';
+
+                checkGeofence(cLat, cLng);
+
+                const alpha = 0.3;
+                if (sLat === 0) { sLat = cLat; sLng = cLng; }
+                sLat = (cLat * alpha) + (sLat * (1 - alpha));
+                sLng = (cLng * alpha) + (sLng * (1 - alpha));
+                lastLat = cLat; lastLng = cLng; lastTs = loopNow;
+
+                let speed = pos.coords.speed !== null ? Math.round(pos.coords.speed * 3.6) : 'N/A';
+                
+                if (document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = speed !== 'N/A' ? speed + " KM/H" : "N/A";
+                if (document.getElementById('live-alt')) document.getElementById('live-alt').innerText = cAlt;
+                if (document.getElementById('live-hdg')) document.getElementById('live-hdg').innerText = cHdg;
+                if (document.getElementById('live-cLat')) document.getElementById('live-cLat').innerText = cLat.toFixed(4);
+                if (document.getElementById('live-cLng')) document.getElementById('live-cLng').innerText = cLng.toFixed(4);
+
+                if (map) {
+                    const myIconHtml = `<div style='width:18px; height:18px; background:#fbbf24; border-radius:50%; border:3px solid white; box-shadow: 0 0 8px rgba(251,191,36,0.6); animation: pulseMarker 2s infinite;'></div>`;
+                    const myIcon = L.divIcon({ html: myIconHtml, className: 'my-marker-icon', iconSize: [18, 18], iconAnchor: [9, 9] });
+
+                    if (!myMarker) {
+                        myMarker = L.marker([sLat, sLng], { icon: myIcon, zIndexOffset: 1000 }).addTo(map);
+                        myMarker.bindPopup(`<div style="text-align:center;"><b style="color:var(--accent-gold);">SIMULATOR (${escapeHTML(uName)})</b><br><span style="color:#fbbf24; font-weight:600;">● Test Drive</span></div>`);
+                    } else {
+                        myMarker.setLatLng([sLat, sLng]);
+                        myMarker.setIcon(myIcon);
+                    }
+
+                    if (!hasInitialCenter) {
+                        map.setView([sLat, sLng], 15);
+                        hasInitialCenter = true;
+                    }
+                }
+
+                const payload = {
+                    name: uName + " (SIM)", bus: train, station: document.getElementById('tStation').value,
+                    crowd: document.getElementById('tCrowd').value, seat: document.getElementById('tSeat').value,
+                    lat: sLat, lng: sLng, speed: speed, alt: cAlt, hdg: cHdg, ts: loopNow,
+                    lastActive: loopNow, status: 'Active'
+                };
+
+                const dateStr = new Date().toISOString().split('T')[0];
+                db.ref(`raw_telemetry/${dateStr}/broadcasts/${uName}_sim`).set(payload);
+                db.ref('active_buses/' + uName).set(payload);
+
+            }, 2000);
         }
 
         // -- Observer Engine relocated to Top Scope --
