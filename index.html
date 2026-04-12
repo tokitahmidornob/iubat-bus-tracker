@@ -1338,7 +1338,9 @@
             }
         }
 
-        // populateTrainDropdowns() call moved to window.onload
+        // P3: Populate gate screen dropdowns immediately in global scope (before window.load)
+        // This ensures dropdowns are ready if user navigates to gate screen before DOMContentLoaded
+        populateTrainDropdowns();
 
         function updateStationRoute() {
             const trainSelect = document.getElementById("tSelect").value;
