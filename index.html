@@ -632,6 +632,19 @@
 
         /* PHASE 2: Comprehensive Mobile Responsiveness (768px and below) */
         @media (max-width: 768px) {
+            /* App Shell & Map - Prevent crushing */
+            #app-shell {
+                flex-direction: column !important;
+                overflow-y: auto !important;
+                height: auto !important;
+                min-height: 100dvh;
+            }
+            #map {
+                min-height: 50vh !important;
+                flex-shrink: 0 !important;
+                width: 100% !important;
+            }
+
             /* Landing Page - Stack and reduce hero text */
             .landing-hero h1 {
                 font-size: 1.75rem !important;
@@ -664,10 +677,11 @@
                 font-size: 12px !important;
             }
 
-            /* Command Dashboard - Stack cards vertically */
+            /* Command Dashboard - Stack cards vertically with proper spacing */
             #dashboard-deck {
                 flex-direction: column !important;
                 padding: 12px 16px 20px !important;
+                margin-bottom: 20px !important;
             }
             .deck-card {
                 width: 100% !important;
@@ -692,16 +706,43 @@
                 padding: 20px !important;
             }
 
-            /* Header responsiveness */
+            /* Header - Clean stacked layout for mobile */
             .header {
-                flex-wrap: wrap !important;
-                gap: 10px !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px;
+                padding: 10px !important;
+                height: auto !important;
+            }
+            .header > div {
+                flex: 1;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
             }
             .brand-text {
                 font-size: 13px !important;
             }
             #sys-status {
                 font-size: 10px !important;
+            }
+
+            /* Header controls with proper spacing */
+            .user-controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                margin-top: 5px;
+                gap: 8px;
+            }
+            .wake-lock-badge {
+                border-radius: 12px !important;
+                padding: 4px 8px !important;
+                white-space: nowrap !important;
+                height: auto !important;
+                aspect-ratio: auto !important;
             }
 
             /* Select dropdowns */
