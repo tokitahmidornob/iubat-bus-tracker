@@ -1437,6 +1437,21 @@
                 } else {
                     // No active operative — show public landing page
                     uName = "";
+
+                    // P2-4: Detach Firebase real-time listener to stop resource leak
+                    db.ref('active_buses').off();
+
+                    // P2-5: Clear stale state from previous session
+                    if (map) {
+                        Object.keys(markers).forEach(id => {
+                            try { map.removeLayer(markers[id]); } catch(e) {}
+                        });
+                        if (myMarker) { try { map.removeLayer(myMarker); } catch(e) {} myMarker = null; }
+                    }
+                    markers = {};
+                    globalDbData = {};
+                    hasInitialCenter = false;
+
                     document.getElementById('app-shell').style.display = 'none';
                     document.getElementById('gate-screen').style.display = 'none';
                     document.getElementById('landing-page').style.display = 'flex';
@@ -1665,9 +1680,16 @@
                     // THIS IS YOUR PRESERVED SENSOR LOGIC
                     const isOnTrack = verifyRouteProximity(cLat, cLng, train);
                     if (!isOnTrack) {
-                        alert("🚨 FALSE ALARM DETECTED: You are broadcasting from outside the designated bus route for this service. Transmission halted and marker erased.");
+                        // P2-3: Direct cleanup instead of recursive toggleTelemetry call
+                        if (wID) { navigator.geolocation.clearWatch(wID); wID = null; }
                         db.ref('active_buses/' + uName).remove();
-                        toggleTelemetry();
+                        if (myMarker && map) { map.removeLayer(myMarker); myMarker = null; }
+                        hasInitialCenter = false;
+                        sLat = 0; sLng = 0; lastLat = null; lastLng = null; lastTs = null;
+                        const mBtnRef = document.getElementById('mBtn');
+                        if (mBtnRef) { mBtnRef.innerText = "INITIATE BROADCAST"; mBtnRef.classList.remove('active'); mBtnRef.disabled = false; mBtnRef.style.opacity = '1'; mBtnRef.style.cursor = 'pointer'; }
+                        document.getElementById('sys-status').innerText = "STATUS: ACTIVE // MODE: PROBE (STANDBY)";
+                        alert("🚨 ROUTE VIOLATION: You are broadcasting from outside the designated bus route. Broadcast has been terminated and your marker erased. Please re-select your bus and station.");
                         return;
                     }
 
@@ -1733,10 +1755,15 @@
             }
         }
 
-        function stopTelemetry(mode) {
+        async function stopTelemetry(mode) {
             document.getElementById('departure-modal').style.display = 'none';
             if (wID) { navigator.geolocation.clearWatch(wID); wID = null; }
-            if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+
+            // P2-6: Wrap wakeLock.release() in try/catch for already-released locks
+            if (wakeLock !== null) {
+                try { wakeLock.release(); } catch(e) { /* Already released by browser */ }
+                wakeLock = null;
+            }
             if (myMarker && map) { map.removeLayer(myMarker); myMarker = null; }
             hasInitialCenter = false;
             sLat = 0; sLng = 0; lastLat = null; lastLng = null; lastTs = null;
@@ -1745,13 +1772,18 @@
             if (btn) { btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active'); }
             document.getElementById('sys-status').innerText = "STATUS: ACTIVE // MODE: PROBE (STANDBY)";
 
-            if (mode === 'permanent') {
-                db.ref('active_buses/' + uName).remove();
-            } else if (mode === 'ghost') {
-                db.ref('active_buses/' + uName).update({
-                    status: 'Inactive',
-                    lastActive: Date.now()
-                });
+            // P2-1 & P2-2: Await DB write BEFORE destroying auth token
+            try {
+                if (mode === 'permanent') {
+                    await db.ref('active_buses/' + uName).remove();
+                } else if (mode === 'ghost') {
+                    await db.ref('active_buses/' + uName).update({
+                        status: 'Inactive',
+                        lastActive: Date.now()
+                    });
+                }
+            } catch (dbErr) {
+                console.error('DB write on stop failed:', dbErr.message);
             }
 
             if (pendingLogout) {
