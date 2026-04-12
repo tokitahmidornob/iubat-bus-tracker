@@ -214,6 +214,12 @@
             }
         }
 
+        @keyframes pulseMarker {
+            0% { box-shadow: 0 0 0 0 rgba(2,132,199,0.5); }
+            70% { box-shadow: 0 0 0 12px rgba(2,132,199,0); }
+            100% { box-shadow: 0 0 0 0 rgba(2,132,199,0); }
+        }
+
         #app-shell {
             display: none;
             flex-direction: column;
@@ -1286,6 +1292,7 @@
         function applyFilter() { renderMarkers(); }
 
         function renderMarkers() {
+            if (!map) return;
             const filter = document.getElementById('fSelect').value;
             const now = Date.now();
             Object.keys(markers).forEach(id => map.removeLayer(markers[id]));
@@ -1293,6 +1300,7 @@
 
             Object.keys(globalDbData).forEach(id => {
                 const p = globalDbData[id];
+                if (myMarker && id === uName) return; // Skip self — handled by local marker
                 if (filter && p.bus !== filter) return;
 
                 const ageMs = now - p.ts;
@@ -1372,6 +1380,7 @@
         }
 
         let wID = null, lastLat = null, lastLng = null, lastTs = null, sLat = 0, sLng = 0;
+        let myMarker = null, hasInitialCenter = false;
 
         async function toggleTelemetry() {
             const btn = document.getElementById('mBtn');
@@ -1418,6 +1427,26 @@
                     if (document.getElementById('live-cLat')) document.getElementById('live-cLat').innerText = cLat.toFixed(4);
                     if (document.getElementById('live-cLng')) document.getElementById('live-cLng').innerText = cLng.toFixed(4);
 
+                    // --- LOCAL BROADCASTER MARKER + AUTO-CENTER ---
+                    if (map) {
+                        const myIconHtml = `<div style='width:18px; height:18px; background:#0284c7; border-radius:50%; border:3px solid white; box-shadow: 0 0 8px rgba(2,132,199,0.6); animation: pulseMarker 2s infinite;'></div>`;
+                        const myIcon = L.divIcon({ html: myIconHtml, className: 'my-marker-icon', iconSize: [18, 18], iconAnchor: [9, 9] });
+
+                        if (!myMarker) {
+                            myMarker = L.marker([sLat, sLng], { icon: myIcon, zIndexOffset: 1000 }).addTo(map);
+                            myMarker.bindPopup(`<div style="text-align:center;"><b style="color:var(--iubat-navy);">YOU (${escapeHTML(uName)})</b><br><span style="color:#0284c7; font-weight:600;">● Broadcasting Live</span></div>`);
+                        } else {
+                            myMarker.setLatLng([sLat, sLng]);
+                            myMarker.setIcon(myIcon);
+                        }
+
+                        // Auto-center on first GPS lock only
+                        if (!hasInitialCenter) {
+                            map.setView([sLat, sLng], 15);
+                            hasInitialCenter = true;
+                        }
+                    }
+
                     const payload = {
                         name: uName, bus: train, station: document.getElementById('tStation').value,
                         crowd: document.getElementById('tCrowd').value, seat: document.getElementById('tSeat').value,
@@ -1441,6 +1470,9 @@
             document.getElementById('departure-modal').style.display = 'none';
             if (wID) { navigator.geolocation.clearWatch(wID); wID = null; }
             if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+            if (myMarker && map) { map.removeLayer(myMarker); myMarker = null; }
+            hasInitialCenter = false;
+            sLat = 0; sLng = 0; lastLat = null; lastLng = null; lastTs = null;
 
             const btn = document.getElementById('mBtn');
             if (btn) { btn.innerText = "INITIATE BROADCAST"; btn.classList.remove('active'); }
