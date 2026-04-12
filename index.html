@@ -1821,16 +1821,39 @@
 
         function startSimulation() {
             const btn = document.getElementById('mBtn');
+            
+            // If simulation is already running, halt it
+            if (simID) {
+                clearInterval(simID);
+                simID = null;
+                btn.innerText = "INITIATE BROADCAST";
+                btn.classList.remove('active');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                document.getElementById('sys-status').innerText = "STATUS: ACTIVE // MODE: PROBE (STANDBY)";
+                
+                // Clean up markers and state
+                if (myMarker && map) { map.removeLayer(myMarker); myMarker = null; }
+                hasInitialCenter = false;
+                sLat = 0; sLng = 0; lastLat = null; lastLng = null; lastTs = null;
+                
+                // Clean Firebase entry
+                const dateStr = new Date().toISOString().split('T')[0];
+                db.ref('active_buses/' + uName).remove();
+                
+                alert("✓ Simulation halted. Telemetry feed cleared.");
+                return;
+            }
+            
             const train = document.getElementById('tSelect').value;
             if (!train) return alert("Select a bus designation to begin simulation.");
 
             if (wID) { navigator.geolocation.clearWatch(wID); wID = null; }
-            if (simID) { clearInterval(simID); simID = null; }
             
             document.getElementById('settings-modal').style.display = 'none';
             btn.disabled = false; btn.style.opacity = '1'; 
             btn.innerText = "HALT SIMULATION"; btn.classList.add('active');
-            document.getElementById('sys-status').innerText = "STATUS: ACTIVE // MODE: SIMULATOR";
+            document.getElementById('sys-status').innerText = "STATUS: ACTIVE // MODE: SIMULATOR (DIAGNOSTIC)";
 
             let simLat = 23.8877;
             let simLng = 90.3898;
