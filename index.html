@@ -819,9 +819,9 @@
 
             <div id="view-student" class="auth-view">
                 <div class="gate-input-wrapper"><label class="gate-label">Student ID</label><input type="text"
-                        id="studentId" class="gate-input" placeholder="Max 8 Digits"></div>
+                        id="studentId" class="gate-input" maxlength="8" inputmode="numeric" placeholder="Max 8 Digits"></div>
                 <div class="gate-input-wrapper"><label class="gate-label">Passcode</label><input type="password"
-                        id="studentPass" class="gate-input" placeholder="Airlock pin"></div>
+                        id="studentPass" class="gate-input" maxlength="50" placeholder="Airlock pin"></div>
                 <select id="studentDefaultBus" class="gate-input fleet-select" style="margin-bottom: 20px;">
                     <option value="">-- Primary Bus Fleet --</option>
                 </select>
@@ -833,9 +833,9 @@
 
             <div id="view-faculty" class="auth-view" style="display: none;">
                 <div class="gate-input-wrapper"><label class="gate-label">Faculty Credentials</label><input type="email"
-                        id="facultyEmail" class="gate-input" placeholder="@iubat.edu domain"></div>
+                        id="facultyEmail" class="gate-input" maxlength="100" placeholder="@iubat.edu domain"></div>
                 <div class="gate-input-wrapper"><label class="gate-label">Passcode</label><input type="password"
-                        id="facultyPass" class="gate-input" placeholder="Airlock pin"></div>
+                        id="facultyPass" class="gate-input" maxlength="50" placeholder="Airlock pin"></div>
                 <select id="facultyDefaultBus" class="gate-input fleet-select" style="margin-bottom: 20px;">
                     <option value="">-- Primary Bus Fleet --</option>
                 </select>
@@ -1287,7 +1287,7 @@
                         document.querySelector('.auth-tabs').style.display = 'none';
                         document.getElementById('view-selection').style.display = 'flex';
                         })
-                        .catch((error) => { reEnableButtons(); alert("Registration Denied :: " + error.message); });
+                        .catch((error) => { reEnableButtons(); alert("Registration Failed: " + error.message); });
                 }).catch((error) => { reEnableButtons(); alert("Persistence Error: " + error.message); });
             } else if (action === 'login') {
                 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
@@ -1872,6 +1872,8 @@
             if (!train) return alert("Select a bus designation to begin.");
 
             if (!wID) {
+                // P3: Halt simulation if running - enforce mutual exclusivity
+                if (simID) { clearInterval(simID); simID = null; }
                 // P3: Double-click guard for broadcast button
                 btn.disabled = true; btn.style.opacity = '0.6'; btn.innerText = 'ACQUIRING GPS...';
                 await requestWakeLock();
@@ -1904,7 +1906,7 @@
                     if (lastLat && lastTs) {
                         const distKm = getHaversine(lastLat, lastLng, cLat, cLng);
                         const timeHr = (now - lastTs) / 3600000;
-                        if (timeHr > 0 && (distKm / timeHr) > 130) return;
+                        if (timeHr > 0 && ((distKm / timeHr) > 130 || (distKm / timeHr) < 0.5)) return;
                     }
 
                     const alpha = 0.3;
