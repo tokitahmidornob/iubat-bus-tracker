@@ -745,6 +745,9 @@
                 aspect-ratio: auto !important;
             }
 
+            /* UX Cursor Fix for Markers */
+            .custom-div-icon, .marker-pin, .marker-pulse { cursor: pointer !important; }
+
             /* Select dropdowns */
             select {
                 font-size: 13px !important;
@@ -1935,7 +1938,7 @@
                     lastLat = cLat; lastLng = cLng; lastTs = now;
 
                     let speed = pos.coords.speed !== null ? Math.round(pos.coords.speed * 3.6) : 'N/A';
-                    if (document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = speed !== 'N/A' ? speed + " KM/H" : "N/A";
+                    if (document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = (pos.coords.speed !== null) ? Math.round(pos.coords.speed * 3.6) + ' KM/H' : 'N/A KM/H';
                     if (document.getElementById('live-alt')) document.getElementById('live-alt').innerText = cAlt;
                     if (document.getElementById('live-hdg')) document.getElementById('live-hdg').innerText = cHdg;
                     if (document.getElementById('live-cLat')) document.getElementById('live-cLat').innerText = cLat.toFixed(4);
@@ -2096,7 +2099,7 @@
 
                 let speed = pos.coords.speed !== null ? Math.round(pos.coords.speed * 3.6) : 'N/A';
                 
-                if (document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = speed !== 'N/A' ? speed + " KM/H" : "N/A";
+                if (document.getElementById('live-kmh')) document.getElementById('live-kmh').innerText = '45 KM/H';
                 if (document.getElementById('live-alt')) document.getElementById('live-alt').innerText = cAlt;
                 if (document.getElementById('live-hdg')) document.getElementById('live-hdg').innerText = cHdg;
                 if (document.getElementById('live-cLat')) document.getElementById('live-cLat').innerText = cLat.toFixed(4);
