@@ -1499,30 +1499,49 @@
         }
 
         function populateTrainDropdowns() {
-            const fSelect = document.getElementById("fSelect");
-            const tSelect = document.getElementById("tSelect");
-            const sDefault = document.getElementById("studentDefaultBus");
-            const fDefault = document.getElementById("facultyDefaultBus");
-            const updDefault = document.getElementById("updateDefaultBus");
+    // ★ Prevent duplicate entries – wipe any existing options first
+    [
+        document.getElementById("fSelect"),
+        document.getElementById("tSelect"),
+        document.getElementById("studentDefaultBus"),
+        document.getElementById("facultyDefaultBus"),
+        document.getElementById("updateDefaultBus")
+    ].forEach(el => {
+        if (el) el.innerHTML = "";
+    });
 
-            let defaultOptF = document.createElement("option"); defaultOptF.value = ""; defaultOptF.text = "-- SHOW ALL ACTIVE BUSES --";
-            let defaultOptT = document.createElement("option"); defaultOptT.value = ""; defaultOptT.text = "-- SELECT YOUR BUS --";
-            if (fSelect) fSelect.appendChild(defaultOptF);
-            if (tSelect) tSelect.appendChild(defaultOptT);
+    const fSelect   = document.getElementById("fSelect");
+    const tSelect   = document.getElementById("tSelect");
+    const sDefault  = document.getElementById("studentDefaultBus");
+    const fDefault  = document.getElementById("facultyDefaultBus");
+    const updDefault = document.getElementById("updateDefaultBus");
 
-            for (let train in routeMatrix) {
-                let text = train.replace(/_/g, ' ');
-                if (fSelect) fSelect.appendChild(new Option(text, train));
-                if (tSelect) tSelect.appendChild(new Option(text, train));
-                if (sDefault) sDefault.appendChild(new Option(text, train));
-                if (fDefault) fDefault.appendChild(new Option(text, train));
-                if (updDefault) updDefault.appendChild(new Option(text, train));
-            }
-        }
+    // Default “show all” / “select your bus” options
+    let defaultOptF = document.createElement("option");
+    defaultOptF.value = "";
+    defaultOptF.text  = "-- SHOW ALL ACTIVE BUSES --";
+
+    let defaultOptT = document.createElement("option");
+    defaultOptT.value = "";
+    defaultOptT.text  = "-- SELECT YOUR BUS --";
+
+    if (fSelect) fSelect.appendChild(defaultOptF);
+    if (tSelect) tSelect.appendChild(defaultOptT);
+
+    // Populate the rest of the dropdowns from the route matrix
+    for (let train in routeMatrix) {
+        let text = train.replace(/_/g, ' ');
+        if (fSelect)   fSelect.appendChild(new Option(text, train));
+        if (tSelect)   tSelect.appendChild(new Option(text, train));
+        if (sDefault)  sDefault.appendChild(new Option(text, train));
+        if (fDefault)  fDefault.appendChild(new Option(text, train));
+        if (updDefault)updDefault.appendChild(new Option(text, train));
+    }
+}
 
         // P3: Populate gate screen dropdowns immediately in global scope (before window.load)
         // This ensures dropdowns are ready if user navigates to gate screen before DOMContentLoaded
-        populateTrainDropdowns();
+        
 
         function updateStationRoute() {
             const trainSelect = document.getElementById("tSelect").value;
@@ -1828,23 +1847,26 @@
                     let mIcon = L.divIcon({ html: mIconHtml, className: 'custom-pin-icon', iconSize: [16, 16], iconAnchor: [8, 8] });
 
                     // RECONCILIATION: Update existing marker position OR create new
+                    const popupHTML = `
+                        <div style="text-align:center;">
+                            <b style="color:var(--brand-primary); font-size:14px;">${escapeHTML(p.bus.replace(/_/g, ' '))}</b><br>
+                            <span style="font-size:11px;">Node: ${escapeHTML(p.name)}</span><br>
+                            <span style="font-size:11px;">Stoppage: ${escapeHTML(p.station)}</span><br>
+                            <b>${escapeHTML(String(p.speed))} KM/H</b> | ${escapeHTML(String(p.alt))}m<br>
+                            <span style="color:${statusColor}; font-weight:bold; font-size:11px;">${statusText}</span>
+                        </div>
+                    `;
                     if (markers[id]) {
-                        // Move existing marker: update lat/lng
+                        // Move existing marker: update lat/lng, icon, and popup
                         markers[id].setLatLng([p.lat, p.lng]);
                         markers[id].setIcon(mIcon);
                         markers[id].setOpacity(opac);
+                        // ★ BUG FIX 2: Refresh popup with latest telemetry on every reconciliation cycle
+                        markers[id].setPopupContent(popupHTML);
                     } else {
                         // Create NEW marker only for new bus IDs
                         markers[id] = L.marker([p.lat, p.lng], { icon: mIcon }).addTo(map);
-                        markers[id].bindPopup(`
-                            <div style="text-align:center;">
-                                <b style="color:var(--brand-primary); font-size:14px;">${escapeHTML(p.bus.replace(/_/g, ' '))}</b><br>
-                                <span style="font-size:11px;">Node: ${escapeHTML(p.name)}</span><br>
-                                <span style="font-size:11px;">Stoppage: ${escapeHTML(p.station)}</span><br>
-                                <b>${escapeHTML(String(p.speed))} KM/H</b> | ${escapeHTML(String(p.alt))}m<br>
-                                <span style="color:${statusColor}; font-weight:bold; font-size:11px;">${statusText}</span>
-                            </div>
-                        `);
+                        markers[id].bindPopup(popupHTML);
                     }
                 }
             });
@@ -1862,6 +1884,18 @@
         function loadMap() {
             const bdBounds = L.latLngBounds([23.5, 90.0], [24.2, 90.8]);
 
+            // ★ BUG FIX 1: If map already initialized, detach old listener and re-attach safely.
+            // Without this, every login cycle stacks a new .on() listener, causing multiplied renders.
+            if (map) {
+                db.ref('active_buses').off();
+                db.ref('active_buses').on('value', snap => {
+                    globalDbData = snap.val() || {};
+                    renderMarkers();
+                });
+                setTimeout(() => { map.invalidateSize(); }, 200);
+                return;
+            }
+
             map = L.map('map', {
                 zoomControl: false,
                 preferCanvas: true,
@@ -1876,6 +1910,7 @@
                 bounds: bdBounds
             }).addTo(map);
 
+            db.ref('active_buses').off(); // ★ Detach any prior listener before registering a fresh one
             db.ref('active_buses').on('value', snap => {
                 globalDbData = snap.val() || {};
                 renderMarkers();
@@ -2131,8 +2166,11 @@
                 };
 
                 const dateStr = new Date().toISOString().split('T')[0];
-                db.ref(`raw_telemetry/${dateStr}/broadcasts/${uName}_sim`).set(payload);
-                db.ref('active_buses/' + uName).set(payload);
+                // ★ BUG FIX 3: Added .catch() to prevent silent unhandled Promise rejections
+                db.ref(`raw_telemetry/${dateStr}/broadcasts/${uName}_sim`).set(payload)
+                    .catch(err => console.error('Sim telemetry write failed:', err.message));
+                db.ref('active_buses/' + uName).set(payload)
+                    .catch(err => console.error('Sim active_buses write failed:', err.message));
 
             }, 2000);
         }
